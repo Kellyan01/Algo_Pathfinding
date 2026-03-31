@@ -61,41 +61,32 @@ function distanceOctile(nodeA, nodeB){
 //Algo a* pour trouver le chemin le plus court entre deux points
 function aStar(grid, start, end, difficultyMode = false, diagonal = false, heuristique = distanceManhattan){
     // version Tableau
-    // const openList = [];
-    // const closedList = [];
-    // openList.push(start);
+    const openList = [];
+    const closedList = [];
+    openList.push(start);
 
     // version optimisé avec Set
-    //const  openList = new Set();
-    const  closedList = new Set();
+    // const  openList = new Set();
+    // const  closedList = new Set();
     // openList.add(start);
-
-    // optimisation avec Priority Queue
-    const openQueue = new PriorityQueue();
-    openQueue.push(start);
 
     // Si diagonal est false, Manhattan est toujours la bonne heuristique
     const h = diagonal ? heuristique : distanceManhattan;
 
     //tant que la liste ouverte n'est pas vide
-    //while(openList.length > 0){ -> version tableau
+    while(openList.length > 0){ // -> version tableau
     //while(openList.size > 0){ // -> version Set
-    while(openQueue.size > 0){ // -> version Priority Queue
         //trouver le noeud avec le f le plus bas
-        //let current = openList.reduce((min,node) => node.f < min.f ? node : min, openList[0]); -> version Tableau
+        let current = openList.reduce((min,node) => node.f < min.f ? node : min, openList[0]);// -> version Tableau
         //let current = [...openList].reduce((min,node) => node.f < min.f ? node : min); // -> version Set
-
-        let current = openQueue.pop(); // -> version Priority Queue : O(log n) au lieu de O(n)
-
-        if(closedList.has(current)) continue; // doublon obsolète → ignorer
 
         //si le noeud courant est le point d'arrivé, retourner le chemin
         if(current === end){
             return end;
         }else{
-            //closedList.push(current) -> version tableau;
-            closedList.add(current); // -> version Set
-            //openList.splice(openList.indexOf(current), 1); -> version tableau
+            closedList.push(current) // -> version tableau;
+            //closedList.add(current); // -> version Set
+            openList.splice(openList.indexOf(current), 1);// -> version tableau
             //openList.delete(current) // -> version Set
             if(current !== start) colorCell(current.x, current.y, "lightblue");
         }
@@ -116,8 +107,8 @@ function aStar(grid, start, end, difficultyMode = false, diagonal = false, heuri
             const neighbor = grid[ny][nx];
 
             // ignorer murs et noeuds déjà explorés
-            //if(neighbor.isWall || closedList.includes(neighbor)) continue; -> version tableau
-            if(neighbor.isWall || closedList.has(neighbor)) continue // -> version Set
+            if(neighbor.isWall || closedList.includes(neighbor)) continue; // -> version tableau
+            // if(neighbor.isWall || closedList.has(neighbor)) continue // -> version Set
 
             // calculer g pour le voisin
             //coût réel du déplacement (1 pour cardinal, √2 pour diagonal)
@@ -126,26 +117,20 @@ function aStar(grid, start, end, difficultyMode = false, diagonal = false, heuri
             const newG = current.g + moveCost + difficulty // coût du chemin actuel + difficulté du voisin + difficulté du node
 
             // si le voisin n'est pas dans la liste ouverte, ou si un chemin plus court est trouvé
-            //if(!openList.includes(neighbor)){ -> version Tableau
+            if(!openList.includes(neighbor)){ // -> version Tableau
             //if(!openList.has(neighbor)){ // -> version Set
-            if(!openQueue.has(neighbor)){ // -> version Priority Queue
                 // nouveau noeud : calculer g, h, f et définir son parent
                 neighbor.g = newG;
                 neighbor.h = h(neighbor, end);
                 neighbor.f = neighbor.g + neighbor.h;
                 neighbor.parent = current;
-                //openList.push(neighbor);
+                openList.push(neighbor);// -> version Tableau
                 //openList.add(neighbor); // -> version Set
-                openQueue.push(neighbor); // -> version Priority Queue
             } else if(newG < neighbor.g){
                 // chemin plus court trouvé : mettre à jour
                 neighbor.g = newG;
                 neighbor.f = neighbor.g + neighbor.h;
                 neighbor.parent = current;
-
-                // Priority Queue : forcer le réordonnancement
-                //openQueue.heap.splice(openQueue.heap.indexOf(neighbor), 1);
-                openQueue.push(neighbor);
             }
         }
     }
