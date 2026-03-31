@@ -33,6 +33,10 @@ Exemples d'espaces : grille 2D, carte routière, réseau informatique, arbre de 
 
 ## 2. L'algorithme A*
 
+> **Analogie :** une personne qui avance vers l'objectif en scannant ce qu'il y a devant elle, tout en se souvenant de l'effort déjà fourni. Elle choisit toujours le chemin qui minimise l'effort total — passé + futur estimé.
+
+> En une phrase : **BFS** minimise les pas. **Greedy** minimise la réflexion. **A\*** minimise l'effort total.
+
 A* (prononcé "A-star") est l'algorithme de pathfinding le plus populaire. Il combine :
 - **Dijkstra** : explore les chemins les moins coûteux depuis le départ
 - **Greedy Best-First Search** : se dirige vers la destination via une heuristique
@@ -295,6 +299,46 @@ Tableau + reduce :   O(n)     par itération
 Priority Queue :     O(log n) par itération
 ```
 
+### Animation pas-à-pas (async / await)
+
+Par défaut, l'algorithme s'exécute de manière **synchrone** — le navigateur ne redessine l'écran qu'une fois la fonction terminée. Pour animer l'exploration case par case, on utilise `async/await` pour céder le contrôle au navigateur entre chaque itération.
+
+**Fonction sleep :**
+```js
+function sleep(ms){
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+```
+
+**Rendre l'algorithme async :**
+```js
+async function aStar(grid, start, end){
+    while(openQueue.size > 0){
+        // ... logique habituelle ...
+        await sleep(50); // pause → le navigateur redessine
+    }
+}
+```
+
+**Adapter l'appel :** une fonction `async` retourne une Promise, l'appelant doit aussi être `async` :
+```js
+pathfinderBtn.addEventListener("click", async () => {
+    pathfinderBtn.disabled = true;          // éviter les doubles clics
+    const path = await aStar(grid, start, end);
+    pathfinderBtn.disabled = false;
+
+    if(!path){ alert("Aucun chemin trouvé !"); return; }
+
+    // animer aussi la reconstruction du chemin
+    let current = path.parent;
+    while(current.parent){
+        colorCell(current.x, current.y, "yellow");
+        await sleep(30);
+        current = current.parent;
+    }
+});
+```
+
 ---
 
 ## 6. La Priority Queue — Tas Binaire
@@ -505,14 +549,54 @@ En pratique, les jeux utilisent des difficultés **prévisibles et bornées** (p
 
 ### BFS — Breadth-First Search
 
-Explore couche par couche, sans notion de coût.
+> **Analogie :** une personne qui envoie des éclaireurs dans toutes les directions simultanément, couche par couche, et s'arrête dès que l'un d'eux atteint l'objectif. Elle minimise le nombre de pas, mais ignore l'effort à fournir pour traverser chaque case.
+
+Explore la grille **couche par couche** via une **file FIFO** (premier entré, premier sorti). Pas de `g`, `h`, ni `f`.
 
 | ✅ Points forts | ❌ Limites |
 |----------------|-----------|
-| Chemin optimal en nombre de cases | Ignore les coûts |
+| Chemin optimal en nombre de cases | Ignore les coûts (`difficulty`) |
 | Simple à implémenter | Lent sur grandes grilles |
+| Garantit de trouver un chemin s'il existe | Gourmand en mémoire |
 
-**Usage :** terrain uniforme, labyrinthe simple.
+**Usage :** terrain uniforme, labyrinthe, réseaux sociaux (degrés de séparation), crawlers web.
+
+**Implémentation :**
+```js
+async function bfs(grid, start, end, diagonal = false){
+    const openList = [start];         // file FIFO — shift() pour dépiler
+    const closedList = new Set();
+
+    while(openList.length > 0){
+        let current = openList.shift(); // premier entré, premier sorti
+
+        if(current === end) return current;
+
+        closedList.add(current);
+        if(current !== start) colorCell(current.x, current.y, "lightcoral");
+
+        const directions = diagonal
+            ? [[-1,0],[1,0],[0,-1],[0,1],[-1,-1],[-1,1],[1,1],[1,-1]]
+            : [[-1,0],[1,0],[0,-1],[0,1]];
+
+        for(const [dy, dx] of directions){
+            const nx = current.x + dx;
+            const ny = current.y + dy;
+            if(nx < 0 || nx >= grid[0].length || ny < 0 || ny >= grid.length) continue;
+
+            const neighbor = grid[ny][nx];
+            if(neighbor.isWall || closedList.has(neighbor) || openList.includes(neighbor)) continue;
+
+            neighbor.parent = current; // pas de g/h/f — juste le parent
+            openList.push(neighbor);
+        }
+        await sleep(50);
+    }
+    return null;
+}
+```
+
+> **Clé :** BFS n'a pas besoin de Priority Queue — `shift()` suffit car tous les noeuds d'une même couche sont équivalents.
 
 ---
 
@@ -546,14 +630,71 @@ Comme A* mais sans heuristique (`h = 0`). Explore en priorité les noeuds les mo
 
 ### Greedy Best-First Search
 
-Utilise uniquement `h`, ignore `g`. Fonce vers l'arrivée sans regarder le coût réel.
+> **Analogie :** un coureur aveugle qui *sent* la direction de l'objectif et fonce vers lui sans voir les murs. Très rapide, mais se retrouve souvent bloqué dans des culs-de-sac.
+
+Utilise **uniquement `h`**, ignore totalement `g` :
+
+```
+f(n) = h(n)   ← g absent
+```
 
 | ✅ Points forts | ❌ Limites |
 |----------------|-----------|
 | Très rapide | Pas de chemin optimal |
-| Peu de mémoire | Se fait piéger par les obstacles |
+| Peu de noeuds explorés en terrain ouvert | Se piège dans les culs-de-sac |
+| | Ignore les coûts de traversée |
 
-**Usage :** IA ennemie basique, quand la vitesse prime sur l'optimalité.
+**Usage :** IA ennemie basique (RPG, FPS), suggestions en temps réel, quand la vitesse prime sur l'optimalité.
+
+**Cas piège typique :**
+```
+S · · · · E
+· ■ ■ ■ ■ ·     Greedy fonce vers E, se bloque contre le mur,
+· ■ · · · ·     doit faire un long détour imprévu.
+· ■ · · · ·     A* l'aurait anticipé grâce à g.
+```
+
+**Implémentation :** identique à A* avec une seule différence — `f = h` (pas de `g`) :
+```js
+async function greedy(grid, start, end, diagonal = false, heuristique = distanceManhattan){
+    const closedList = new Set();
+    const openQueue = new PriorityQueue();
+    openQueue.push(start);
+    const h = diagonal ? heuristique : distanceManhattan;
+
+    while(openQueue.size > 0){
+        let current = openQueue.pop();
+        if(closedList.has(current)) continue;
+        if(current === end) return end;
+
+        closedList.add(current);
+        if(current !== start) colorCell(current.x, current.y, "lightblue");
+
+        const directions = diagonal
+            ? [[-1,0],[1,0],[0,-1],[0,1],[-1,-1],[-1,1],[1,1],[1,-1]]
+            : [[-1,0],[1,0],[0,-1],[0,1]];
+
+        for(const [dy, dx] of directions){
+            const nx = current.x + dx;
+            const ny = current.y + dy;
+            if(nx < 0 || nx >= grid[0].length || ny < 0 || ny >= grid.length) continue;
+
+            const neighbor = grid[ny][nx];
+            if(neighbor.isWall || closedList.has(neighbor)) continue;
+
+            if(!openQueue.has(neighbor)){
+                neighbor.h = h(neighbor, end);
+                neighbor.f = neighbor.h; // ← seule différence avec A*
+                neighbor.parent = current;
+                openQueue.push(neighbor);
+            }
+            // pas de else if : sans g, on ne peut pas comparer des chemins alternatifs
+        }
+        await sleep(50);
+    }
+    return null;
+}
+```
 
 ---
 
