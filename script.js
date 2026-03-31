@@ -34,8 +34,8 @@ container.addEventListener("click", (event)=>{
 })
 
 //Lancement de l'algorithme A*
-pathfinderBtn.addEventListener("click", ()=>{
-    const path = aStar(mainGrid, start, end, true, false, distanceOctile);
+pathfinderBtn.addEventListener("click", async ()=>{
+    const path = await aStar(mainGrid, start, end, true, false);
 
     if(!path){
         alert("Aucun chemin trouvé !");
@@ -46,6 +46,7 @@ pathfinderBtn.addEventListener("click", ()=>{
     let current = path.parent;
     while(current.parent){
         colorCell(current.x, current.y, "yellow");
+        await sleep(30); // pour visualiser le chemin en temps réel
         current = current.parent;
     }
 });

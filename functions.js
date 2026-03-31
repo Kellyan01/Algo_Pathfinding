@@ -38,6 +38,11 @@ function colorCell(x,y,color){
     cell.style.backgroundColor = color;
 }
 
+//Crée une pause de ms millisecondes
+function sleep(ms){
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
 //Calcul de la distance entre deux points (heurstique de Manhattan) -> on ne prend pas en compte les diagonales
 function distanceManhattan(nodeA, nodeB){
     return Math.abs(nodeA.x - nodeB.x) + Math.abs(nodeA.y - nodeB.y);
@@ -59,7 +64,7 @@ function distanceOctile(nodeA, nodeB){
 }
 
 //Algo a* pour trouver le chemin le plus court entre deux points
-function aStar(grid, start, end, difficultyMode = false, diagonal = false, heuristique = distanceManhattan){
+async function aStar(grid, start, end, difficultyMode = false, diagonal = false, heuristique = distanceManhattan){
     // version Tableau
     // const openList = [];
     // const closedList = [];
@@ -147,14 +152,17 @@ function aStar(grid, start, end, difficultyMode = false, diagonal = false, heuri
                 //openQueue.heap.splice(openQueue.heap.indexOf(neighbor), 1);
                 openQueue.push(neighbor);
             }
+
         }
+        // pour visualiser l'algorithme en temps réel
+        await sleep(50);
     }
 
     return null; // aucun chemin trouvé
 }
 
 //Algo dijkstra pour trouver le chemin le plus court entre deux points
-function dijkstra(grid, start, end, difficultyMode = false, diagonal = false){
+async function dijkstra(grid, start, end, difficultyMode = false, diagonal = false){
     const openList = [];
     const closedList = [];
     openList.push(start);
@@ -211,6 +219,8 @@ function dijkstra(grid, start, end, difficultyMode = false, diagonal = false){
                 neighbor.parent = current;
             }
         }
+        // pause de 50ms pour visualiser l'algorithme en temps réel
+        await sleep(50);
     }
 
     return null; // aucun chemin trouvé
