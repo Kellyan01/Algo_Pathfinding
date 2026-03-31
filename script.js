@@ -35,7 +35,7 @@ container.addEventListener("click", (event)=>{
 
 //Lancement de l'algorithme A*
 pathfinderBtn.addEventListener("click", ()=>{
-    const path = aStar(mainGrid, start, end, false, false);
+    const path = aStar(mainGrid, start, end, true, false, distanceOctile);
 
     if(!path){
         alert("Aucun chemin trouvé !");
