@@ -633,6 +633,7 @@ Deux recherches simultanées depuis le départ et l'arrivée. Elles se rejoignen
 - A* pour le premier calcul
 - D* Lite uniquement pour les recalculs partiels si l'environnement change
 
+robot qui navigue dans une pièce où des personnes se déplacent
 ---
 
 ## 11. Notions avancées
