@@ -13,7 +13,7 @@ container.style.width = gridCol*42+"px";
 
 //Création de la grille de div
 const mainGrid = createGrid(gridRow,gridCol);
-renderGrid(mainGrid, container,true);
+renderGrid(mainGrid, container,false);
 
 //Point de départ et d'arrivé
 const start = mainGrid[0][0];
@@ -35,7 +35,7 @@ container.addEventListener("click", (event)=>{
 
 //Lancement de l'algorithme A*
 pathfinderBtn.addEventListener("click", async ()=>{
-    const path = await aStar(mainGrid, start, end, true, false);
+    const path = await bfs(mainGrid, start, end, true);
 
     if(!path){
         alert("Aucun chemin trouvé !");
