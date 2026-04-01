@@ -9,7 +9,24 @@
 <body>
     <aside>
         <button id="pathfinder">Trouver le chemin</button>
+        <label>
+            <input type="checkbox" id="toggleDifficulty" checked> Difficulté
+        </label>
+        <label>
+            <input type="checkbox" id="toggleDiagonal" checked> Diagonales
+        </label>
+
+        <label for="algoSelect">Algorithme</label>
+        <select id="algoSelect">
+            <option value="astar">A*</option>
+            <option value="dijkstra">Dijkstra</option>
+            <option value="bfs">BFS - Breadth-First Search</option>
+            <option value="greedy">Greedy - Best-First Search</option>
+        </select>
+        <button id="resetPartial">Reset Partiel</button>
+        <button id="resetTotal">Reset Total</button>
     </aside>
+    
     <main id="container">
 
     </main>

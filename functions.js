@@ -42,3 +42,55 @@ function colorCell(x,y,color){
 function sleep(ms){
     return new Promise(resolve => setTimeout(resolve, ms));
 }
+
+//Reset Partiel
+function resetPartial(grid, start, end, difficulty){
+    for(const row of grid){
+        // remise à 0 des coûts
+        for(const node of row){
+            node.g = 0;
+            node.h = 0;
+            node.f = node.g + node.h;
+            node.parent = null;
+
+            // remise de la couleur d'origine
+            if(node !== start && node !== end && !node.isWall){
+                difficulty ? colorCell(node.x, node.y,  `hsl(30, ${node.difficulty * 10}%, ${100 - node.difficulty * 5}%)`) : colorCell(node.x, node.y,  "");
+            }
+        }
+    }
+}
+
+//Reset Total
+function resetTotal(grid, start, end, difficulty){
+    for(const row of grid){
+        // remise à 0 des coûts
+        for(const node of row){
+            node.g = 0;
+            node.h = 0;
+            node.f = node.g + node.h;
+            node.parent = null;
+            node.isWall = false;
+
+            // remise de la couleur d'origine
+            if(node !== start && node !== end){
+                difficulty ? colorCell(node.x, node.y,  `hsl(30, ${node.difficulty * 10}%, ${100 - node.difficulty * 5}%)`) : colorCell(node.x, node.y,  "");
+            }
+        }
+    }
+}
+
+//choix de l'algo
+async function algoLauncher(algorithm,grid, start, end, difficulty,diagonal,heuristique = distanceManhattan){
+    switch(algorithm){
+        case "dijkstra" :
+            return await dijkstra(grid, start, end, difficulty, diagonal);
+        case "bfs" :
+            return await bfs(grid, start, end, diagonal);
+        case "geedy" :
+            return await greedy(grid,start,end, diagonal, heuristique);
+        case "astar" :
+        default :
+            return await aStar(grid, start, end, difficulty, diagonal, heuristique);
+    }
+}

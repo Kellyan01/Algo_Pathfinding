@@ -4,11 +4,21 @@ const container = document.getElementById("container");
 //ciblage du bouton de pathfinding
 const pathfinderBtn = document.getElementById("pathfinder");
 
+//ciblage des toggles
+const difficultyToggle = document.getElementById("toggleDifficulty");
+const diagonnalToggle = document.getElementById("toggleDiagonal");
+
+//ciblage des boutons
+const resetPartialBtn = document.getElementById("resetPartial");
+const resetTotalBtn = document.getElementById("resetTotal");
+const selectAlgo = document.getElementById("algoSelect");
+
 //paramètre de la grille
 const gridRow = 20;
 const gridCol = 20;
 let difficulty = true;
 let diagonal = true;
+let selectedAlgo = selectAlgo.value;
 
 //largeur du container
 container.style.width = gridCol*42+"px";
@@ -45,9 +55,41 @@ container.addEventListener("click", (event)=>{
     mainGrid[parseInt(y)][parseInt(x)].isWall = true;
 })
 
+//Toggle de la Difficulté
+difficultyToggle.addEventListener("change", (event)=>{
+    difficulty = event.target.checked;
+    for(const row of mainGrid){
+        for(const node of row){
+            if(node !== start && node !== end && !node.isWall){
+                difficulty ? colorCell(node.x, node.y,  `hsl(30, ${node.difficulty * 10}%, ${100 - node.difficulty * 5}%)`) : colorCell(node.x, node.y,  "");
+            }
+        }
+    }
+})
+
+//Toggle des Diagonal
+diagonnalToggle.addEventListener("change", (event)=>{
+    diagonal = event.target.checked;
+})
+
+//Reset Partiel
+resetPartialBtn.addEventListener("click",(event)=>{
+    resetPartial(mainGrid, start, end, difficulty);
+})
+
+//Reset Total
+resetTotalBtn.addEventListener("click",(event)=>{
+    resetTotal(mainGrid, start, end, difficulty);
+})
+
+//Choix Algo
+selectAlgo.addEventListener("change",(event)=>{
+    selectedAlgo = event.target.value;
+})
+
 //Lancement de l'algorithme A*
 pathfinderBtn.addEventListener("click", async ()=>{
-    const path = await aStar(mainGrid, start, end, difficulty, diagonal, distanceOctile);
+    const path = await algoLauncher(selectedAlgo, mainGrid, start, end, difficulty,diagonal,distanceOctile);
 
     if(!path){
         alert("Aucun chemin trouvé !");
