@@ -19,12 +19,16 @@
 
         <label for="algoSelect">Algorithme</label>
         <select id="algoSelect">
-            <option value="astar">A*</option>
-            <option value="dijkstra">Dijkstra</option>
-            <option value="bfs">BFS - Breadth-First Search</option>
-            <option value="greedy">Greedy - Best-First Search</option>
-            <option value="biDirectionalAStar">Bidirectionnel A*</option>
-            <option value="biDirectionalDijkstra">Bidirectionnel Dijkstra</option>
+            <optgroup label="Heuristique">
+                <option value="astar">A*</option>
+                <option value="greedy">Greedy - Best-First Search</option>
+                <option value="biDirectionalAStar">Bidirectionnel A*</option>
+            </optgroup>
+            <optgroup label="Non Heuristique">
+                <option value="dijkstra">Dijkstra</option>
+                <option value="bfs">BFS - Breadth-First Search</option>
+                <option value="biDirectionalDijkstra">Bidirectionnel Dijkstra</option>
+            </optgroup>  
         </select>
 
         <label for="heuristiqueSelect">heuristique</label>
