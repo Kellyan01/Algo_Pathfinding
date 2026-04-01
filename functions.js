@@ -87,7 +87,7 @@ async function algoLauncher(algorithm,grid, start, end, difficulty,diagonal,heur
             return await dijkstra(grid, start, end, difficulty, diagonal);
         case "bfs" :
             return await bfs(grid, start, end, diagonal);
-        case "geedy" :
+        case "greedy" :
             return await greedy(grid,start,end, diagonal, heuristique);
         case "astar" :
         default :

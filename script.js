@@ -1,3 +1,11 @@
+//Objet d'heuristiques
+const heuristiques = {
+    manhattan: distanceManhattan,
+    chebyshev: distanceChebyshev,
+    euclidienne: distanceEuclidienne,
+    octile: distanceOctile
+};
+
 //ciblage de #container
 const container = document.getElementById("container");
 
@@ -12,6 +20,7 @@ const diagonnalToggle = document.getElementById("toggleDiagonal");
 const resetPartialBtn = document.getElementById("resetPartial");
 const resetTotalBtn = document.getElementById("resetTotal");
 const selectAlgo = document.getElementById("algoSelect");
+const selectHeuristique = document.getElementById("heuristiqueSelect");
 
 //paramètre de la grille
 const gridRow = 20;
@@ -19,6 +28,7 @@ const gridCol = 20;
 let difficulty = true;
 let diagonal = true;
 let selectedAlgo = selectAlgo.value;
+let selectedHeuristique = heuristiques[selectHeuristique.value];
 
 //largeur du container
 container.style.width = gridCol*42+"px";
@@ -87,9 +97,14 @@ selectAlgo.addEventListener("change",(event)=>{
     selectedAlgo = event.target.value;
 })
 
+//Choix Heuristique
+selectHeuristique.addEventListener("change",(event)=>{
+    selectedHeuristique = heuristiques[event.target.value];
+})
+
 //Lancement de l'algorithme A*
 pathfinderBtn.addEventListener("click", async ()=>{
-    const path = await algoLauncher(selectedAlgo, mainGrid, start, end, difficulty,diagonal,distanceOctile);
+    const path = await algoLauncher(selectedAlgo, mainGrid, start, end, difficulty,diagonal,selectedHeuristique);
 
     if(!path){
         alert("Aucun chemin trouvé !");
