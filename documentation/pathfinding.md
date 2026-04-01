@@ -820,7 +820,7 @@ Ainsi chaque direction lit et écrit dans ses propres structures sans interfére
 
 ---
 
-### Structure de l'algorithme
+### Structure de l'algorithme (version simplifiée)
 
 ```js
 async function biDirectionalAStar(grid, start, end, difficultyMode, diagonal, heuristique){
@@ -838,6 +838,35 @@ async function biDirectionalAStar(grid, start, end, difficultyMode, diagonal, he
     return null;
 }
 ```
+
+### Structure de l'algorithme (version optimale)
+
+La version optimale nécessite `peek()` sur la PriorityQueue — lire le `f` minimum sans pop :
+
+```js
+peek(){
+    return this.heap[0]?.f ?? Infinity;
+}
+```
+
+Au lieu de retourner à la première rencontre, on continue jusqu'à ce que la condition d'arrêt soit satisfaite :
+
+```js
+let bestCost = Infinity;
+let bestMeeting = null;
+
+// À chaque rencontre :
+const cost = gForward.get(meeting) + gBackward.get(meeting);
+if(cost < bestCost){ bestCost = cost; bestMeeting = meeting; }
+
+// Condition d'arrêt — avant await sleep() :
+if(bestMeeting !== null &&
+   openListForward.peek() + openListBackward.peek() >= bestCost){
+    return buildPath(bestMeeting, parentsForward, parentsBackward);
+}
+```
+
+**Note :** `peek()` retourne le `f` figé au moment du `push` (lazy deletion). La condition est conservative — elle peut s'arrêter légèrement tard, mais jamais trop tôt.
 
 ---
 
@@ -870,10 +899,13 @@ La chaîne `.parent` reconstruite permet au code de visualisation existant (`whi
 
 La version simplifiée s'arrête dès la **première rencontre**. Elle ne garantit pas le chemin optimal — un meilleur chemin pourrait passer par un autre point de rencontre non encore exploré.
 
-| Version | Chemin trouvé | Optimal ? | Complexité |
-|---------|--------------|-----------|-----------|
-| Simplifiée | ✅ | ❌ (pas garanti) | Faible |
-| Optimale | ✅ | ✅ | Moyenne |
+| Version | Chemin trouvé | Optimal ? | Complexité | Condition d'arrêt |
+|---------|--------------|-----------|-----------|---|
+| Simplifiée | ✅ | ❌ (pas garanti) | Faible | Première rencontre |
+| Optimale A* | ✅ | ✅* | Moyenne | `peek_fwd + peek_bwd >= bestCost` |
+| Optimale Dijkstra | ✅ | ✅ | Moyenne | `g_fwd(cur) + g_bwd(cur) >= bestCost` |
+
+\* conservative — peut s'arrêter légèrement tard à cause du `f` figé dans le heap (lazy deletion)
 
 ---
 
