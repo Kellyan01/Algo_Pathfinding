@@ -7,13 +7,15 @@ const pathfinderBtn = document.getElementById("pathfinder");
 //paramètre de la grille
 const gridRow = 20;
 const gridCol = 20;
+let difficulty = true;
+let diagonal = true;
 
 //largeur du container
 container.style.width = gridCol*42+"px";
 
 //Création de la grille de div
 const mainGrid = createGrid(gridRow,gridCol);
-renderGrid(mainGrid, container,false);
+renderGrid(mainGrid, container, difficulty);
 
 //Point de départ et d'arrivé
 const start = mainGrid[0][0];
@@ -28,14 +30,24 @@ container.addEventListener("click", (event)=>{
     const x = event.target.getAttribute("data-x");
     const y = event.target.getAttribute("data-y");
     const node = mainGrid[parseInt(y)][parseInt(x)];
-    if(node.isWall || node === start || node === end) return;
+    if(node === start || node === end) return;
+    if(node.isWall){
+        mainGrid[parseInt(y)][parseInt(x)].isWall = false;
+        if(difficulty){
+            const d = node.difficulty;
+            event.target.style.backgroundColor = `hsl(30, ${d * 10}%, ${100 - d * 5}%)`;
+            return;
+        }
+        colorCell(x,y,"");
+        return;
+    }
     colorCell(x,y,"black");
     mainGrid[parseInt(y)][parseInt(x)].isWall = true;
 })
 
 //Lancement de l'algorithme A*
 pathfinderBtn.addEventListener("click", async ()=>{
-    const path = await aStar(mainGrid, start, end, false, true, distanceOctile);
+    const path = await aStar(mainGrid, start, end, difficulty, diagonal, distanceOctile);
 
     if(!path){
         alert("Aucun chemin trouvé !");
