@@ -866,16 +866,53 @@ La chaîne `.parent` reconstruite permet au code de visualisation existant (`whi
 
 ---
 
-### Limites de l'implémentation simplifiée
+### Version simplifiée vs version optimale
 
-Cette implémentation s'arrête dès la **première rencontre**. Elle ne garantit pas le chemin optimal — un meilleur chemin pourrait passer par un autre point de rencontre non encore exploré.
-
-Pour garantir l'optimalité, il faudrait continuer à explorer après la rencontre et garder en mémoire le meilleur chemin de rencontre trouvé jusqu'à ce que la condition d'arrêt soit satisfaite. Pour un visualiseur pédagogique, la version simplifiée est suffisante.
+La version simplifiée s'arrête dès la **première rencontre**. Elle ne garantit pas le chemin optimal — un meilleur chemin pourrait passer par un autre point de rencontre non encore exploré.
 
 | Version | Chemin trouvé | Optimal ? | Complexité |
 |---------|--------------|-----------|-----------|
-| Simplifiée (implémentée) | ✅ | ❌ (pas garanti) | Faible |
-| Complète | ✅ | ✅ | Élevée |
+| Simplifiée | ✅ | ❌ (pas garanti) | Faible |
+| Optimale | ✅ | ✅ | Moyenne |
+
+---
+
+### Version optimale — principe
+
+Plutôt que de s'arrêter à la première rencontre, on **continue d'explorer** et on garde en mémoire le meilleur point de rencontre trouvé :
+
+```js
+let bestCost = Infinity;  // coût du meilleur chemin de rencontre
+let bestMeeting = null;   // nœud de rencontre correspondant
+
+// À chaque rencontre, au lieu de retourner immédiatement :
+if(closedListBackward.has(currentForward)){
+    const cost = gForward.get(currentForward) + gBackward.get(currentForward);
+    if(cost < bestCost){ bestCost = cost; bestMeeting = currentForward; }
+}
+```
+
+On s'arrête seulement quand **aucun chemin futur ne peut battre `bestCost`** :
+
+```js
+if(bestMeeting !== null &&
+   gForward.get(currentForward) + gBackward.get(currentBackward) >= bestCost){
+    return buildPath(bestMeeting, parentsForward, parentsBackward);
+}
+```
+
+**Pourquoi cette condition est correcte :** `currentForward` et `currentBackward` sont les nœuds avec le `g` le plus bas dans chaque direction (Dijkstra). Aucun chemin futur ne peut coûter moins que leur somme. Si cette somme dépasse `bestCost`, explorer davantage est inutile.
+
+---
+
+### Pourquoi la différence est rarement visible sur petite grille
+
+Les deux versions donnent souvent le même résultat sur une grille 20×20 pour deux raisons :
+
+1. **Dijkstra explore par coût croissant** — les deux fronts se rejoignent naturellement dans une zone à faible coût. Le premier point de rencontre est souvent déjà optimal.
+2. **Les cas divergents sont rares** — il faut une configuration spécifique : un couloir étroit à coût élevé traversé en premier, alors qu'un chemin plus long mais moins coûteux existe.
+
+Pour voir la différence, il faut construire ce type de configuration manuellement, ou travailler sur de grandes grilles avec des variations de coût importantes.
 
 ---
 
@@ -904,6 +941,15 @@ On peut appliquer la recherche bidirectionnelle à **n'importe quelle recherche*
 **Pourquoi Dijkstra bidirectionnel plutôt que A* dans les GPS ?**
 
 Le A* bidirectionnel optimal complet est plus difficile à prouver correct à cause de l'**asymétrie des heuristiques** : l'heuristique Forward estime vers `end`, l'heuristique Backward estime vers `start` — les deux ne sont pas comparables directement. Dijkstra bidirectionnel évite ce problème car il n'a pas d'heuristique du tout — la symétrie est parfaite.
+
+**Condition d'arrêt comparée :**
+
+| | Version simplifiée | Version optimale |
+|---|---|---|
+| A* Bidirectionnel | Première rencontre | `minF_fwd + minF_bwd >= bestCost` (nécessite `peek()`) |
+| Dijkstra Bidirectionnel | Première rencontre | `g_fwd(current) + g_bwd(current) >= bestCost` (exact, pas de `peek()`) |
+
+Dijkstra a une condition d'arrêt **exacte** car `f = g` (coût réel). A* utilise des `f` qui intègrent une heuristique — la condition d'arrêt est une approximation plus difficile à garantir.
 
 ---
 

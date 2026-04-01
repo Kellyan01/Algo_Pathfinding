@@ -12,7 +12,8 @@ Dossier : d:\Projet_Dev_Yoann\Javascript\Algo_A_Star\
 src/
   script/
     Entity/       → Node.js, PriorityQueue.js
-    algorithms/   → aStar.js, dijkstra.js, bfs.js, greedy.js, heuristique.js
+    algorithms/   → aStar.js, dijkstra.js, bfs.js, greedy.js, heuristique.js,
+                     biDirectionalAStar.js, biDirectionalDijkstra.js, biDirectionalDijkstraOpti.js
     functions/    → functions.js
     script.js
   style/
@@ -31,10 +32,12 @@ index.html
 - src/script/algorithms/dijkstra.js — algorithme Dijkstra async
 - src/script/algorithms/bfs.js — algorithme BFS async (FIFO, sans g/h/f)
 - src/script/algorithms/greedy.js — algorithme Greedy async (f = h uniquement)
-- src/script/algorithms/biDirectionalAStar.js — algorithme A* bidirectionnel async (deux fronts, buildPath)
+- src/script/algorithms/biDirectionalAStar.js — A* bidirectionnel simplifié (arrêt à la première rencontre)
+- src/script/algorithms/biDirectionalDijkstra.js — Dijkstra bidirectionnel simplifié
+- src/script/algorithms/biDirectionalDijkstraOpti.js — Dijkstra bidirectionnel optimal (bestCost/bestMeeting, condition d'arrêt exacte)
 - src/script/script.js — point d'entrée, grille 20x20, start/end, listeners, panel de contrôle
 - index.html — interface avec aside de contrôle (boutons, selects, checkboxes)
-- documentation/pathfinding.md — guide pédagogique complet (13 sections)
+- documentation/pathfinding.md — guide pédagogique complet (14 sections)
 - documentation/labyrinthGenerator.md — génération de labyrinthes (DFS, Prim, Kruskal...)
 - documentation/dungeonGenerator.md — génération de donjons (BSP, Delaunay+MST, Cellular Automata, WFC)
 - documentation/panelAdmin.md — documentation de l'implémentation du panel de contrôle
@@ -48,14 +51,17 @@ index.html
 - Admissibilité des heuristiques
 - Choix de structure : tableau vs Set vs PQ
 - Génération de labyrinthes (DFS) et donjons (BSP, etc.) — théorie documentée
-- A* Bidirectionnel — deux fronts (Forward bleu, Backward corail), Maps séparées pour g/parents, fusion via buildPath()
+- Bidirectionnel (principe général) — applicable à tout algo, combinaisons cohérentes vs problématiques
+- A* Bidirectionnel simplifié — deux fronts (Forward bleu, Backward corail), Maps séparées pour g/parents, fusion via buildPath()
+- Dijkstra Bidirectionnel simplifié et optimal — version optimale : bestCost/bestMeeting, condition d'arrêt exacte via g réels (pas de peek() nécessaire)
+- Pourquoi la différence simplifiée/optimale est rarement visible sur petite grille
 - Panel de contrôle complet :
   - Toggle mur au clic (ajouter / supprimer)
   - Toggle difficulté (avec mise à jour visuelle immédiate)
   - Toggle diagonales
   - Reset partiel (efface la visualisation algo, garde les murs)
   - Reset total (remet tout à zéro, supprime les murs)
-  - Choix de l'algorithme via select (A*, Dijkstra, BFS, Greedy, Bidirectionnel A*) — dispatch via algoLauncher()
+  - Choix de l'algorithme via select (A*, Dijkstra, BFS, Greedy, Bidirectionnel A*, Dijkstra Bidirectionnel, Dijkstra Bidirectionnel Optimal) — dispatch via algoLauncher()
   - Choix de l'heuristique via select (Manhattan, Chebyshev, Euclidienne, Octile) — stockage de la fonction via objet de correspondance
 
 ## Prochaines étapes possibles (non faites)

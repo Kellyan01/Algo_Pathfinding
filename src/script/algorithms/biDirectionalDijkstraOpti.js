@@ -1,5 +1,5 @@
-// Algo de Pathfinding biDirectionnel -> basé sur Dijstra (non optimal)
-async function biDirectionalDijkstra(grid, start, end, difficultyMode, diagonal){
+// Algo de Pathfinding biDirectionnel -> basé sur Dijkstra (optimal)
+async function biDirectionalDijkstraOpti(grid, start, end, difficultyMode, diagonal){
     // Map() pour le stockage des données des Node
     const gForward = new Map(); // node -> g calculé par Forward
     const gBackward = new Map(); // node -> g calculé par Backward
@@ -25,6 +25,10 @@ async function biDirectionalDijkstra(grid, start, end, difficultyMode, diagonal)
     gBackward.set(end,0);
     parentsForward.set(start, null);
     parentsBackward.set(end, null);
+
+    //OPTIMAL : variable de suivi
+    let bestCost = Infinity;
+    let bestMeeting = null;
 
     //Boucle principale -> Tant que les 2 openList ont un node
     while(openListForward.size > 0 && openListBackward.size > 0){
@@ -86,7 +90,14 @@ async function biDirectionalDijkstra(grid, start, end, difficultyMode, diagonal)
 
         // 2. Vérifier si le node sorti est dans closedListBackward -> rencontre !
         if(closedListBackward.has(currentForward)){
-            return buildPath(currentForward, parentsForward, parentsBackward);
+            //return buildPath(currentForward, parentsForward, parentsBackward);
+
+            //OPTIMAL
+            const cost = gForward.get(currentForward) + gBackward.get(currentForward);
+            if(cost < bestCost){
+                bestCost = cost;
+                bestMeeting = currentForward;
+            }
         }
 
         // 3. Un pas Backward
@@ -147,7 +158,19 @@ async function biDirectionalDijkstra(grid, start, end, difficultyMode, diagonal)
 
         // 4. Vérifier si le node sorti est dans closedListForward -> rencontre !
         if(closedListForward.has(currentBackward)){
-            return buildPath(currentBackward, parentsForward, parentsBackward);
+            //return buildPath(currentBackward, parentsForward, parentsBackward);
+
+            //OPTIMAL
+            const cost = gForward.get(currentBackward) + gBackward.get(currentBackward);
+            if(cost < bestCost){
+                bestCost = cost;
+                bestMeeting = currentBackward;
+            }
+        }
+
+        //OPTIMAL : condition d'arrêt
+        if(bestMeeting !== null && gForward.get(currentForward) + gBackward.get(currentBackward) >= bestCost){
+            return buildPath(bestMeeting, parentsForward, parentsBackward);
         }
 
         // Visualition étape par étape

@@ -93,6 +93,8 @@ async function algoLauncher(algorithm,grid, start, end, difficulty,diagonal,heur
             return await biDirectionalAStar(grid, start, end, difficulty, diagonal, heuristique);
         case "biDirectionalDijkstra" :
             return await biDirectionalDijkstra(grid, start, end, difficulty, diagonal);
+        case "biDirectionalDijkstraOpti" :
+            return await biDirectionalDijkstraOpti(grid, start, end, difficulty, diagonal);
         case "astar" :
         default :
             return await aStar(grid, start, end, difficulty, diagonal, heuristique);
