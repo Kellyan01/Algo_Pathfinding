@@ -59,7 +59,9 @@ Diviser récursivement l'espace en deux jusqu'à obtenir des zones assez petites
 4. Remonter l'arbre : relier chaque paire de salles frères par un couloir en L
 ```
 
-### Implémentation simplifiée
+### Implémentation
+
+**`BSPNode`** — représente une zone rectangulaire de la grille :
 
 ```js
 class BSPNode {
@@ -67,12 +69,16 @@ class BSPNode {
         this.x = x; this.y = y;
         this.width = width; this.height = height;
         this.left = null; this.right = null;
-        this.room = null; // salle placée dans cette feuille
+        this.room = null; // salle placée dans cette feuille (null pour les nœuds internes)
     }
 }
+```
 
+**`splitBSP(node, minSize)`** — découpe récursivement l'arbre :
+
+```js
 function splitBSP(node, minSize){
-    if(node.width < minSize * 2 && node.height < minSize * 2) return; // trop petit
+    if(node.width < minSize * 2 && node.height < minSize * 2) return;
 
     const splitHorizontal = Math.random() > 0.5;
 
@@ -88,6 +94,119 @@ function splitBSP(node, minSize){
 
     if(node.left)  splitBSP(node.left, minSize);
     if(node.right) splitBSP(node.right, minSize);
+}
+```
+
+> **Clé :** la condition de sortie est un `&&` — on arrête seulement si les deux dimensions sont trop petites. Si une seule dimension le permet, on coupe dans l'autre direction.
+
+**`placeRooms(node, minSize, maxSize)`** — place une salle dans chaque feuille :
+
+```js
+function placeRooms(node, minSize, maxSize){
+    if(!node.left || !node.right){
+        // Taille : entre minSize-1 et min(node.width-2, maxSize)
+        const roomWidth  = Math.min(
+            (minSize - 1) + Math.floor(Math.random() * (node.width - minSize)),
+            node.width - 2,
+            maxSize
+        );
+        const roomHeight = Math.min(
+            (minSize - 1) + Math.floor(Math.random() * (node.height - minSize)),
+            node.height - 2,
+            maxSize
+        );
+        // Position : +1 de marge minimale de chaque côté
+        const roomX = node.x + 1 + Math.floor(Math.random() * (node.width  - roomWidth  - 1));
+        const roomY = node.y + 1 + Math.floor(Math.random() * (node.height - roomHeight - 1));
+
+        node.room = { x: roomX, y: roomY, width: roomWidth, height: roomHeight };
+    } else {
+        if(node.left)  placeRooms(node.left, minSize, maxSize);
+        if(node.right) placeRooms(node.right, minSize, maxSize);
+    }
+}
+```
+
+> **Piège :** quand une zone fait exactement `minSize` de large, la formule sans `Math.min` donne `roomWidth = minSize - 1` avec un offset +1, ce qui fait dépasser la salle du bord de la zone. Le `Math.min(..., node.width - 2)` corrige ce cas limite.
+>
+> **`maxSize`** ajoute un second plafond indépendant de la taille de la zone — utile pour éviter que les grandes zones produisent des salles qui occupent presque toute leur surface.
+
+**`applyRooms(node, grid)`** — creuse les salles dans la grille :
+
+```js
+function applyRooms(node, grid){
+    if(node.room){
+        for(let i = node.room.x; i < node.room.x + node.room.width; i++){
+            for(let j = node.room.y; j < node.room.y + node.room.height; j++){
+                grid[j][i].isWall = false;
+            }
+        }
+    } else {
+        if(node.left)  applyRooms(node.left, grid);
+        if(node.right) applyRooms(node.right, grid);
+    }
+}
+```
+
+**`getRoom(node)`** — remonte l'arbre pour trouver une salle dans un sous-arbre :
+
+```js
+function getRoom(node){
+    if(node.room) return node.room;
+    return getRoom(node.left) || getRoom(node.right);
+}
+```
+
+**`connectRooms(node, grid)`** — trace les couloirs en L entre salles frères :
+
+```js
+function connectRooms(node, grid){
+    if(node.left)  connectRooms(node.left, grid);
+    if(node.right) connectRooms(node.right, grid);
+
+    if(node.left && node.right){
+        const leftRoom  = getRoom(node.left);
+        const rightRoom = getRoom(node.right);
+        if(leftRoom && rightRoom){
+            const lx = leftRoom.x  + Math.floor(leftRoom.width  / 2);
+            const ly = leftRoom.y  + Math.floor(leftRoom.height / 2);
+            const rx = rightRoom.x + Math.floor(rightRoom.width  / 2);
+            const ry = rightRoom.y + Math.floor(rightRoom.height / 2);
+
+            // Segment horizontal (à hauteur du centre gauche)
+            for(let i = Math.min(lx, rx); i <= Math.max(lx, rx); i++)
+                grid[ly][i].isWall = false;
+            // Segment vertical (à la colonne du centre droit)
+            for(let j = Math.min(ly, ry); j <= Math.max(ly, ry); j++)
+                grid[j][rx].isWall = false;
+        }
+    }
+}
+```
+
+> **Pourquoi relier via les centres ?** Chaque salle est garantie d'avoir un centre accessible (elle a au moins 1 case de largeur). Le couloir en L passe forcément à travers ou à côté des salles — il n'y a pas de risque de couloir isolé.
+
+**`generateBSP(grid, minSize = 5)`** — point d'entrée :
+
+```js
+function generateBSP(grid, minSize = 5, maxSize = 8){
+    // 1. Tout murer
+    for(const row of grid)
+        for(const node of row)
+            node.isWall = true;
+
+    // 2. Créer la racine et découper
+    const root = new BSPNode(0, 0, grid[0].length, grid.length);
+    splitBSP(root, minSize);
+
+    // 3. Placer et creuser les salles
+    placeRooms(root, minSize, maxSize);
+    applyRooms(root, grid);
+
+    // 4. Relier les salles
+    connectRooms(root, grid);
+
+    return root;
 }
 ```
 

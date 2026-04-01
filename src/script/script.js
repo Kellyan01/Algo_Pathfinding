@@ -21,6 +21,7 @@ const resetPartialBtn = document.getElementById("resetPartial");
 const resetTotalBtn = document.getElementById("resetTotal");
 const selectAlgo = document.getElementById("algoSelect");
 const selectHeuristique = document.getElementById("heuristiqueSelect");
+const generateDungeonBSPBtn = document.getElementById("generateDungeonBSP");
 
 //paramètre de la grille
 const gridRow = 20;
@@ -117,5 +118,26 @@ pathfinderBtn.addEventListener("click", async ()=>{
         colorCell(current.x, current.y, "yellow");
         await sleep(30); // pour visualiser le chemin en temps réel
         current = current.parent;
+    }
+});
+
+// Lancement de la génération de donjon avec BSP
+generateDungeonBSPBtn.addEventListener("click", ()=>{
+    // Réinitialiser la grille
+    resetTotal(mainGrid, start, end, difficulty);
+
+    // Générer le donjon avec BSP
+    generateBSP(mainGrid);
+
+    // Mettre à jour les couleurs des cases en fonction de la difficulté
+    for(const row of mainGrid){
+        for(const node of row){
+            if(node === start || node === end) continue; // ne pas recolorier le start et end
+            if(node.isWall){
+                colorCell(node.x, node.y, "black"); // colorier les murs en noir
+            } else { // colorier les cases non murales en fonction de la difficulté
+                difficulty ? colorCell(node.x, node.y,  `hsl(30, ${node.difficulty * 10}%, ${100 - node.difficulty * 5}%)`) : colorCell(node.x, node.y,  "");
+            }
+        }
     }
 });

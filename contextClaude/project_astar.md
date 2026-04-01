@@ -11,10 +11,13 @@ Dossier : d:\Projet_Dev_Yoann\Javascript\Algo_A_Star\
 ```
 src/
   script/
-    Entity/       → Node.js, PriorityQueue.js
-    algorithms/   → aStar.js, dijkstra.js, bfs.js, greedy.js, heuristique.js,
-                     biDirectionalAStar.js, biDirectionalAStarOpti.js,
-                     biDirectionalDijkstra.js, biDirectionalDijkstraOpti.js
+    Entity/       → Node.js, PriorityQueue.js, BSPNode.js
+    algorithms/
+      pathfinding/ → aStar.js, dijkstra.js, bfs.js, greedy.js, heuristique.js,
+                      biDirectionalAStar.js, biDirectionalAStarOpti.js,
+                      biDirectionalDijkstra.js, biDirectionalDijkstraOpti.js
+      generators/
+        dungeon/  → bspDungeon.js
     functions/    → functions.js
     script.js
   style/
@@ -28,21 +31,24 @@ index.html
 - src/script/Entity/Node.js — classe Node (x, y, difficulty, g, h, f, isWall, parent)
 - src/script/Entity/PriorityQueue.js — tas binaire min-heap avec lazy deletion + peek()
 - src/script/functions/functions.js — createGrid, renderGrid, colorCell, sleep, resetPartial, resetTotal, algoLauncher, buildPath
-- src/script/algorithms/heuristique.js — distanceManhattan, distanceChebyshev, distanceEuclidienne, distanceOctile
-- src/script/algorithms/aStar.js — algorithme A* async avec PriorityQueue
-- src/script/algorithms/dijkstra.js — algorithme Dijkstra async
-- src/script/algorithms/bfs.js — algorithme BFS async (FIFO, sans g/h/f)
-- src/script/algorithms/greedy.js — algorithme Greedy async (f = h uniquement)
-- src/script/algorithms/biDirectionalAStar.js — A* bidirectionnel simplifié (arrêt à la première rencontre)
-- src/script/algorithms/biDirectionalAStarOpti.js — A* bidirectionnel optimal (bestCost/bestMeeting, condition d'arrêt via peek())
-- src/script/algorithms/biDirectionalDijkstra.js — Dijkstra bidirectionnel simplifié
-- src/script/algorithms/biDirectionalDijkstraOpti.js — Dijkstra bidirectionnel optimal (bestCost/bestMeeting, condition d'arrêt exacte via g réels)
+- src/script/Entity/BSPNode.js — classe BSPNode (x, y, width, height, left, right, room)
+- src/script/algorithms/pathfinding/heuristique.js — distanceManhattan, distanceChebyshev, distanceEuclidienne, distanceOctile
+- src/script/algorithms/pathfinding/aStar.js — algorithme A* async avec PriorityQueue
+- src/script/algorithms/pathfinding/dijkstra.js — algorithme Dijkstra async
+- src/script/algorithms/pathfinding/bfs.js — algorithme BFS async (FIFO, sans g/h/f)
+- src/script/algorithms/pathfinding/greedy.js — algorithme Greedy async (f = h uniquement)
+- src/script/algorithms/pathfinding/biDirectionalAStar.js — A* bidirectionnel simplifié
+- src/script/algorithms/pathfinding/biDirectionalAStarOpti.js — A* bidirectionnel optimal
+- src/script/algorithms/pathfinding/biDirectionalDijkstra.js — Dijkstra bidirectionnel simplifié
+- src/script/algorithms/pathfinding/biDirectionalDijkstraOpti.js — Dijkstra bidirectionnel optimal
+- src/script/algorithms/generators/dungeon/bspDungeon.js — splitBSP, placeRooms(minSize, maxSize), applyRooms, getRoom, connectRooms, generateBSP(minSize=5, maxSize=8)
 - src/script/script.js — point d'entrée, grille 20x20, start/end, listeners, panel de contrôle
 - index.html — interface avec aside de contrôle (boutons, selects, checkboxes)
 - documentation/pathfinding.md — guide pédagogique complet (14 sections)
 - documentation/labyrinthGenerator.md — génération de labyrinthes (DFS, Prim, Kruskal...)
 - documentation/dungeonGenerator.md — génération de donjons (BSP, Delaunay+MST, Cellular Automata, WFC)
 - documentation/panelAdmin.md — documentation de l'implémentation du panel de contrôle
+- documentation/mapGenerator.md — génération de cartes naturelles (Perlin, Voronoi, Diamond-Square, Érosion hydraulique, Cellular Automata)
 
 ## Ce qui a été couvert
 - A* complet (Node, grille, heuristiques, PQ, lazy deletion, async animation)
@@ -53,6 +59,8 @@ index.html
 - Admissibilité des heuristiques
 - Choix de structure : tableau vs Set vs PQ
 - Génération de labyrinthes (DFS) et donjons (BSP, etc.) — théorie documentée
+- Génération de donjon BSP — implémentée (splitBSP, placeRooms, applyRooms, connectRooms)
+- Génération de cartes naturelles — théorie documentée (Perlin, Voronoi, Diamond-Square, Érosion, Cellular Automata)
 - Bidirectionnel (principe général) — applicable à tout algo, combinaisons cohérentes vs problématiques
 - A* Bidirectionnel simplifié — deux fronts (Forward bleu, Backward corail), Maps séparées pour g/parents, fusion via buildPath()
 - A* Bidirectionnel optimal — même principe + bestCost/bestMeeting, condition d'arrêt via peek() (f figé, conservative mais correcte)
@@ -73,7 +81,7 @@ index.html
 - Option D : PQ + Set miroir (structure idéale)
 - Theta* (any-angle pathfinding — chemins naturels via line-of-sight)
 - Implémenter la génération de labyrinthe DFS
-- Implémenter la génération de donjon BSP
+- ~~Implémenter la génération de donjon BSP~~ ✅ fait
 
 **Why:** session d'apprentissage guidée, l'utilisateur code lui-même avec guidance de Claude.
 **How to apply:** reprendre avec les "Prochaines étapes" si l'utilisateur veut continuer.
