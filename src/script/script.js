@@ -127,7 +127,7 @@ generateDungeonBSPBtn.addEventListener("click", ()=>{
     resetTotal(mainGrid, start, end, difficulty);
 
     // Générer le donjon avec BSP
-    generateBSP(mainGrid);
+    generateBSP(mainGrid, 5, 10);
 
     // Mettre à jour les couleurs des cases en fonction de la difficulté
     for(const row of mainGrid){

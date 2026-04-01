@@ -210,13 +210,35 @@ function generateBSP(grid, minSize = 5, maxSize = 8){
 }
 ```
 
+### Paramètres et leur effet
+
+| Paramètre | Rôle | Valeur faible | Valeur élevée |
+|-----------|------|--------------|--------------|
+| `minSize` | Taille minimale d'une zone | Plus de feuilles → plus de salles | Moins de salles, plus grandes zones |
+| `maxSize` | Taille maximale d'une salle | Salles toutes petites | Salles pouvant remplir la zone |
+
+### Peut-on placer plusieurs salles par feuille ?
+
+Techniquement oui, mais **cela va à l'encontre du principe de BSP**. L'intérêt de BSP est précisément que la structure en arbre garantit qu'aucune zone ne se chevauche — donc aucune salle non plus. Placer plusieurs salles dans une feuille casse cette garantie et oblige à gérer les collisions manuellement.
+
+**Pour avoir plus de salles, les vraies options sont :**
+
+| Option | Comment | Compromis |
+|--------|---------|-----------|
+| **Réduire `minSize`** | Zones plus petites → plus de feuilles → plus de salles | Salles plus petites |
+| **Agrandir la grille** | Plus d'espace = plus de zones possibles | Grille plus grande |
+| **Placement aléatoire** | Oublier le BSP pour les salles, les placer librement avec détection de collision | Plus complexe, plus organique |
+| **BSP + subdivision** | Après le BSP, subdiviser les grandes feuilles en plusieurs petites salles reliées | Logique de connexion plus complexe |
+
+> En pratique sur une grille 20×20 avec `minSize = 5`, on obtient 4 à 8 salles. Passer à `minSize = 3` sur une grille 30×30 peut facilement en produire 15 à 20.
+
 ### Avantages / Limites
 
 | ✅ Avantages | ❌ Limites |
 |------------|----------|
 | Salles jamais superposées | Disposition parfois trop régulière |
 | Couloirs logiques entre voisins | Manque d'organicité |
-| Contrôle facile de la densité | Peu adapté aux grottes |
+| Contrôle facile via minSize/maxSize | Peu adapté aux grottes |
 
 **Cas d'usage :** Binding of Isaac, Nethack, la majorité des roguelikes classiques.
 
