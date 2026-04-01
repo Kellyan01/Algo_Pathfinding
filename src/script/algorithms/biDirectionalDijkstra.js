@@ -1,5 +1,5 @@
 // Algo de Pathfinding biDirectionnel -> basé sur A*
-async function biDirectionalAStar(grid, start, end, difficultyMode, diagonal, heuristique){
+async function biDirectionalDijkstra(grid, start, end, difficultyMode, diagonal){
     // Map() pour le stockage des données des Node
     const gForward = new Map(); // node -> g calculé par Forward
     const gBackward = new Map(); // node -> g calculé par Backward
@@ -76,7 +76,7 @@ async function biDirectionalAStar(grid, start, end, difficultyMode, diagonal, he
                     parentsForward.set(neighbor, currentForward);
 
                     // calculer le nouveau f du voisin
-                    neighbor.f = newG + heuristique(neighbor, end);
+                    neighbor.f = newG;
 
                     // conserve le voisin dans la liste ouverte de Forward
                     openListForward.push(neighbor);
@@ -100,7 +100,7 @@ async function biDirectionalAStar(grid, start, end, difficultyMode, diagonal, he
             closedListBackward.add(currentBackward);
 
             // coloration de la case en corail
-            if(currentBackward!== start && currentBackward !== end){
+            if(currentBackward !== start && currentBackward !== end){
                 colorCell(currentBackward.x, currentBackward.y, "lightcoral");
             }
 
@@ -137,7 +137,7 @@ async function biDirectionalAStar(grid, start, end, difficultyMode, diagonal, he
                     parentsBackward.set(neighbor, currentBackward);
 
                     // calculer le nouveau f du voisin
-                    neighbor.f = newG + heuristique(neighbor, start);
+                    neighbor.f = newG;
 
                     // conserve le voisin dans la liste ouverte de Backward
                     openListBackward.push(neighbor);
