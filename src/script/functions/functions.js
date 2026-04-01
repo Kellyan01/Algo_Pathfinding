@@ -89,8 +89,51 @@ async function algoLauncher(algorithm,grid, start, end, difficulty,diagonal,heur
             return await bfs(grid, start, end, diagonal);
         case "greedy" :
             return await greedy(grid,start,end, diagonal, heuristique);
+        case "biDirectionalAStar" :
+            return await biDirectionalAStar(grid, start, end, difficulty, diagonal, heuristique);
         case "astar" :
         default :
             return await aStar(grid, start, end, difficulty, diagonal, heuristique);
     }
+}
+
+//reconstruire un chemin à partir de 2 demi-chemin (utile pour l'algo biDirectionnel) -> Attention : parentsForward et parentsBackward sont des Map
+function buildPath(meeting, parentsForward, parentsBackward){
+    // 1. Construire le demi-chemin forward dans un tableau
+    //    en remontant parentsForward depuis meeting jusqu'à null
+    //    → [meeting, ..., start]
+    const forwardPath = [];
+    let node = meeting;
+    while(node !== null){
+        forwardPath.push(node);
+        node = parentsForward.get(node);
+    }
+
+    // 2. Inverser ce tableau → [start, ..., meeting]
+    forwardPath.reverse();
+
+    // 3. Construire le demi-chemin backward dans un tableau
+    //    en remontant parentsBackward depuis meeting jusqu'à null
+    //    mais en skippant meeting lui-même (déjà dans le forward)
+    //    → [nextAfterMeeting, ..., end]
+    const backwardPath = [];
+    node = parentsBackward.get(meeting)
+    while(node !== null){
+        backwardPath.push(node);
+        node = parentsBackward.get(node);
+    }
+
+    // 4. Fusionner les deux tableaux → fullPath = [...forward, ...backward]
+    const fullPath = [...forwardPath, ...backwardPath];
+
+    // 5. Reconstruire la chaîne parent :
+    //    fullPath[0].parent = null
+    //    fullPath[i].parent = fullPath[i-1]
+    fullPath[0].parent = null
+    for(let i = 1; i < fullPath.length; i++){
+        fullPath[i].parent = fullPath[i-1]
+    }
+
+    // 6. Retourner le dernier nœud
+    return fullPath.pop();
 }

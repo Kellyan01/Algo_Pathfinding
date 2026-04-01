@@ -17,9 +17,10 @@
 8. [Heuristique et difficulté variable](#8-heuristique-et-difficulté-variable)
 9. [Autres algorithmes de pathfinding](#9-autres-algorithmes-de-pathfinding)
 10. [Combinaison d'algorithmes](#10-combinaison-dalgorithmes)
-11. [Notions avancées](#11-notions-avancées)
-12. [Domaines d'application](#12-domaines-dapplication)
-13. [Limites de A*](#13-limites-de-a)
+11. [A* Bidirectionnel — Implémentation](#11-a-bidirectionnel--implémentation)
+12. [Notions avancées](#12-notions-avancées)
+13. [Domaines d'application](#13-domaines-dapplication)
+14. [Limites de A*](#14-limites-de-a)
 
 ---
 
@@ -733,10 +734,12 @@ DFS             ❌          ✅            ❌                 ❌
 Dijkstra        ✅          ❌            ✅                 ❌
 Greedy          ❌          ✅            ❌                 ❌
 A*              ✅          ✅            ✅                 ❌
+A* Bidirect.    ✅**        ✅✅           ✅                 ❌
 D* Lite         ✅          ✅            ✅                 ✅
 JPS             ✅          ✅✅           ❌                 ❌
 ```
 *optimal en nombre de cases, pas en coût
+**optimal si l'implémentation continue après la rencontre (version simplifiée : chemin valide mais pas garanti optimal)
 
 ---
 
@@ -765,9 +768,11 @@ Utilisé dans les grands jeux (Warcraft) et Google Maps (autoroutes d'abord, rou
 
 Évite de lancer A* inutilement quand les murs bloquent tout.
 
-### A* bidirectionnel (A* + Dijkstra)
+### A* bidirectionnel
 
 Deux recherches simultanées depuis le départ et l'arrivée. Elles se rejoignent au milieu. Jusqu'à 2x moins de noeuds explorés. Utilisé dans les GPS longue distance.
+
+> Voir section [11 — Implémentation détaillée](#11-a-bidirectionnel--implémentation).
 
 ### A* + D* Lite
 
@@ -775,9 +780,134 @@ Deux recherches simultanées depuis le départ et l'arrivée. Elles se rejoignen
 - D* Lite uniquement pour les recalculs partiels si l'environnement change
 
 robot qui navigue dans une pièce où des personnes se déplacent
+
 ---
 
-## 11. Notions avancées
+## 11. A* Bidirectionnel — Implémentation
+
+### Principe
+
+Au lieu d'une seule recherche depuis `start`, on lance **deux recherches A* en parallèle** :
+- **Forward** : depuis `start` vers `end`
+- **Backward** : depuis `end` vers `start`
+
+On alterne un pas Forward, un pas Backward. On s'arrête dès qu'un nœud sorti d'une recherche apparaît dans la **closed list** de l'autre — c'est le **point de rencontre**.
+
+```
+Forward  →  →  →  ↘
+                   meeting
+Backward ←  ←  ←  ↗
+```
+
+**Gain :** chaque front explore environ la moitié de l'espace. Sur une grille ouverte, A* explore un cercle de rayon `d`, le bidirectionnel explore deux demi-cercles de rayon `d/2` → environ **2x moins de nœuds**.
+
+---
+
+### Le problème des données partagées
+
+Les nœuds ont un seul `g`, `h`, `f`, `parent`. Si les deux recherches écrivent dessus simultanément, elles se corrompent.
+
+**Solution : Maps séparées** pour stocker les données de chaque direction :
+
+```js
+const gForward       = new Map(); // node → g calculé par Forward
+const gBackward      = new Map(); // node → g calculé par Backward
+const parentsForward  = new Map(); // node → parent dans la direction Forward
+const parentsBackward = new Map(); // node → parent dans la direction Backward
+```
+
+Ainsi chaque direction lit et écrit dans ses propres structures sans interférence.
+
+---
+
+### Structure de l'algorithme
+
+```js
+async function biDirectionalAStar(grid, start, end, difficultyMode, diagonal, heuristique){
+    // Maps + PriorityQueues + Sets pour les deux directions
+    // Initialisation : gForward(start) = 0, gBackward(end) = 0
+
+    while(openListForward.size > 0 && openListBackward.size > 0){
+        // 1. Un pas Forward (explorer le voisinage de currentForward)
+        // 2. Si currentForward est dans closedListBackward → rencontre !
+        //    return buildPath(currentForward, parentsForward, parentsBackward)
+        // 3. Un pas Backward (symétrique, heuristique vers start)
+        // 4. Si currentBackward est dans closedListForward → rencontre !
+        //    return buildPath(currentBackward, parentsForward, parentsBackward)
+    }
+    return null;
+}
+```
+
+---
+
+### Reconstruction du chemin — buildPath
+
+Au point de rencontre `meeting`, on dispose de deux demi-chemins dans les Maps :
+
+```
+parentsForward  : meeting → ... → start
+parentsBackward : meeting → ... → end
+```
+
+```js
+function buildPath(meeting, parentsForward, parentsBackward){
+    // 1. Remonter parentsForward depuis meeting → [meeting, ..., start]
+    // 2. Inverser → [start, ..., meeting]
+    // 3. Remonter parentsBackward depuis le nœud après meeting → [..., end]
+    //    (on skippe meeting, déjà présent dans le forward)
+    // 4. Fusionner → fullPath = [start, ..., meeting, ..., end]
+    // 5. Reconstruire la chaîne .parent nœud par nœud
+    // 6. Retourner le dernier nœud (end)
+}
+```
+
+La chaîne `.parent` reconstruite permet au code de visualisation existant (`while(current.parent)`) de fonctionner sans modification.
+
+---
+
+### Limites de l'implémentation simplifiée
+
+Cette implémentation s'arrête dès la **première rencontre**. Elle ne garantit pas le chemin optimal — un meilleur chemin pourrait passer par un autre point de rencontre non encore exploré.
+
+Pour garantir l'optimalité, il faudrait continuer à explorer après la rencontre et garder en mémoire le meilleur chemin de rencontre trouvé jusqu'à ce que la condition d'arrêt soit satisfaite. Pour un visualiseur pédagogique, la version simplifiée est suffisante.
+
+| Version | Chemin trouvé | Optimal ? | Complexité |
+|---------|--------------|-----------|-----------|
+| Simplifiée (implémentée) | ✅ | ❌ (pas garanti) | Faible |
+| Complète | ✅ | ✅ | Élevée |
+
+---
+
+### Le bidirectionnel est un principe, pas un algorithme
+
+On peut appliquer la recherche bidirectionnelle à **n'importe quelle recherche**. Le choix des deux algos combinés détermine la fiabilité du résultat.
+
+**Combinaisons cohérentes** — les deux directions explorent dans le même ordre, la rencontre est fiable :
+
+| Combinaison | Résultat |
+|---|---|
+| A* + A* | Rapide, optimal* |
+| Dijkstra + Dijkstra | Optimal garanti — utilisé dans les GPS réels (OSRM, Google Maps) |
+| BFS + BFS | Optimal en nombre de cases, terrain uniforme |
+
+**Combinaisons problématiques** — les deux directions n'explorent pas dans le même ordre, le point de rencontre peut être sous-optimal :
+
+| Combinaison | Problème |
+|---|---|
+| A* + BFS | A* trie par `f`, BFS par couches — la rencontre n'a pas de sens coût |
+| BFS + Greedy | Greedy fonce sans garantie de coût |
+| A* + Greedy | Idem — Greedy ne garantit rien sur la qualité du chemin |
+
+> **Règle :** mélanger deux algos avec des stratégies différentes produit *un* chemin, mais on ne peut pas raisonner sur sa qualité.
+
+**Pourquoi Dijkstra bidirectionnel plutôt que A* dans les GPS ?**
+
+Le A* bidirectionnel optimal complet est plus difficile à prouver correct à cause de l'**asymétrie des heuristiques** : l'heuristique Forward estime vers `end`, l'heuristique Backward estime vers `start` — les deux ne sont pas comparables directement. Dijkstra bidirectionnel évite ce problème car il n'a pas d'heuristique du tout — la symétrie est parfaite.
+
+---
+
+## 12. Notions avancées
 
 ### Représentation en graphe
 
@@ -800,7 +930,7 @@ Utilisé dans les RTS quand des centaines d'unités doivent atteindre la même d
 
 ---
 
-## 12. Domaines d'application
+## 13. Domaines d'application
 
 | Domaine | Application |
 |---------|-------------|
@@ -814,7 +944,7 @@ Utilisé dans les RTS quand des centaines d'unités doivent atteindre la même d
 
 ---
 
-## 13. Limites de A*
+## 14. Limites de A*
 
 | Problème | Cause | Solution |
 |----------|-------|----------|
@@ -827,4 +957,4 @@ Utilisé dans les RTS quand des centaines d'unités doivent atteindre la même d
 
 ---
 
-*Document rédigé le 31/03/2026 — Implémentation disponible dans les fichiers `Node.js`, `functions.js`, `script.js`.*
+*Document mis à jour le 01/04/2026 — Implémentation disponible dans `src/script/algorithms/`, `src/script/functions/functions.js`, `src/script/script.js`.*
