@@ -26,6 +26,11 @@ class PriorityQueue {
         return this.heap.length;
     }
 
+    peek(){
+        return this.heap[0]?.f ?? Infinity; // retourne le f minimum, Infinity si vide
+    }
+
+
     _bubbleUp(i) {
         while (i > 0) {
             const parent = Math.floor((i - 1) / 2);
