@@ -8,6 +8,43 @@ const heuristiques = {
 
 //Liste de Biomes
 const biomes = [1,3,5,8,10];
+const biomesList = [
+    {
+        type:"Route",
+        difficulty:0,
+        imgUrl:""
+    },
+    {
+        type:"Plaine",
+        difficulty:1,
+        imgUrl:""
+    },
+    {
+        type:"Forêt",
+        difficulty:3,
+        imgUrl:""
+    },
+    {
+        type:"Marais",
+        difficulty:5,
+        imgUrl:""
+    },
+    {
+        type:"Colline",
+        difficulty:6,
+        imgUrl:""
+    },
+    {
+        type:"Montagne",
+        difficulty:8,
+        imgUrl:""
+    },
+    {
+        type:"Eau Profonde",
+        difficulty:10,
+        imgUrl:""
+    }
+];
 
 //ciblage de #container
 const container = document.getElementById("container");
@@ -212,7 +249,7 @@ generateDungeonBSPBtn.addEventListener("click", ()=>{
 
 // Lancement de la génération de Map avec Voronoi
 generateMapVoronoiBtn.addEventListener("click", ()=>{
-    const seeds = generateSeeds(10, gridCol, gridRow,biomes,5)
+    const seeds = generateSeeds(20, gridCol, gridRow,biomesList,5)
     generateVoronoi(mainGrid, seeds, 5);
     //4. Coloriser les cases si la difficukté est activé
     //Coloration en fonction de la difficulté

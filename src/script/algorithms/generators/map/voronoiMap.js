@@ -106,10 +106,12 @@ function generateSeeds(count, gridCols, gridRows,biomes, jitter){
         const seedJitter = Math.random() * jitter;
 
         const seed = {
+            type:biomes[index].type,
             x: x,
             y: y,
-            difficulty: biomes[index],
-            jitter : seedJitter
+            difficulty: biomes[index].difficulty,
+            jitter : seedJitter,
+            imgUrl: biomes[index].imgUrl
         }
         seeds.push(seed);
     }
