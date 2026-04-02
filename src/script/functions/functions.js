@@ -38,6 +38,13 @@ function colorCell(x,y,color){
     cell.style.backgroundColor = color;
 }
 
+//Image de background des case
+function backgroundImageCell(x,y,imgUrl){
+    const cell = document.querySelector(`div[data-x="${x}"][data-y="${y}"]`);
+    cell.style.backgroundImage = imgUrl;
+    cell.style.backgroundSize = "cover";
+}
+
 //Crée une pause de ms millisecondes
 function sleep(ms){
     return new Promise(resolve => setTimeout(resolve, ms));
