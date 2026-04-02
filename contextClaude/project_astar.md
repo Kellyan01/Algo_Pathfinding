@@ -18,6 +18,7 @@ src/
                       biDirectionalDijkstra.js, biDirectionalDijkstraOpti.js
       generators/
         dungeon/  → bspDungeon.js
+        map/      → voronoiMap.js
     functions/    → functions.js
     script.js
   style/
@@ -89,7 +90,7 @@ index.html
 - biomesList dans script.js — tableau d'objets {type, difficulty, imgUrl} remplace le simple tableau de difficultés numériques
 - nodeTileUrl(node, tileSet) — assigne type et imgUrl au node via reduce sur la difficulté la plus proche (prévu pour affichage tiles, imgUrl vides pour l'instant)
 - Bouton "Générer Carte Voronoi" dans le panel (section Map Generator dans index.html)
-- Tableau `biomes = [1, 3, 5, 8, 10]` déclaré en global dans script.js
+- `biomesList` déclaré en global dans script.js — tableau d'objets `{type, difficulty, imgUrl}` avec 7 biomes (Route=1, Plaine=2, Forêt=4, Marais=6, Colline=7, Montagne=8, Eau Profonde=10)
 
 ## Prochaines étapes possibles (non faites)
 - Option C : mode comparaison côte à côte entre algos
@@ -97,6 +98,7 @@ index.html
 - Theta* (any-angle pathfinding — chemins naturels via line-of-sight)
 - Implémenter la génération de labyrinthe DFS
 - ~~Implémenter la génération de donjon BSP~~ ✅ fait
+- ~~Génération de carte Voronoi~~ ✅ fait (jitter + blending)
 
 **Why:** session d'apprentissage guidée, l'utilisateur code lui-même avec guidance de Claude.
 **How to apply:** reprendre avec les "Prochaines étapes" si l'utilisateur veut continuer.
