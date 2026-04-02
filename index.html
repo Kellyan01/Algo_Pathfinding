@@ -25,6 +25,8 @@
             <input type="number" id="roomMaxSize"> Taille maximum d'une pièce
         </label>
         <button id="generateDungeonBSP">Générer Donjon BSP</button>
+        <h2>Map Generator</h2>
+        <button id="generateMapVoronoi">Générer Carte Voronoi</button>
         <h2>Sélectionnez votre Builder</h2>
         <section>
             <label for="offRadio"><input type="radio" id="offRadio" name="builder" checked>Désactivé</label>
@@ -37,7 +39,7 @@
             <input type="checkbox" id="toggleDifficulty" checked> Difficulté
         </label>
         <label>
-            <input type="checkbox" id="toggleDiagonal"> Diagonales
+            <input type="checkbox" id="toggleDiagonal" checked> Diagonales
         </label>
 
         <label for="algoSelect">Algorithme</label>
@@ -88,6 +90,7 @@
     <script src="./src/script/algorithms/pathfinding/biDirectionalAStarOpti.js"></script>
     <script src="./src/script/Entity/BSPNode.js"></script>
     <script src="./src/script/algorithms/generators/dungeon/bspDungeon.js"></script>
+    <script src="./src/script/algorithms/generators/map/voronoiMap.js"></script>
     <script src="./src/script/script.js"></script>
 </body>
 </html>

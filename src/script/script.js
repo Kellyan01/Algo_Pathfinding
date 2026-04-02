@@ -6,6 +6,9 @@ const heuristiques = {
     octile: distanceOctile
 };
 
+//Liste de Biomes
+const biomes = [1,3,5,8,10];
+
 //ciblage de #container
 const container = document.getElementById("container");
 
@@ -22,6 +25,7 @@ const resetTotalBtn = document.getElementById("resetTotal");
 const selectAlgo = document.getElementById("algoSelect");
 const selectHeuristique = document.getElementById("heuristiqueSelect");
 const generateDungeonBSPBtn = document.getElementById("generateDungeonBSP");
+const generateMapVoronoiBtn = document.getElementById("generateMapVoronoi");
 
 //Ciblage paramétrage taille de grille
 const gridCreationBtn = document.getElementById("gridCreation");
@@ -201,6 +205,21 @@ generateDungeonBSPBtn.addEventListener("click", ()=>{
                 colorCell(node.x, node.y, "black"); // colorier les murs en noir
             } else { // colorier les cases non murales en fonction de la difficulté
                 difficulty ? colorCell(node.x, node.y,  `hsl(30, ${node.difficulty * 10}%, ${100 - node.difficulty * 5}%)`) : colorCell(node.x, node.y,  "");
+            }
+        }
+    }
+});
+
+// Lancement de la génération de Map avec Voronoi
+generateMapVoronoiBtn.addEventListener("click", ()=>{
+    const seeds = generateSeeds(10, gridCol, gridRow,biomes)
+    generateVoronoi(mainGrid, seeds);
+    //4. Coloriser les cases si la difficukté est activé
+    //Coloration en fonction de la difficulté
+    if(difficulty){
+        for(const row of mainGrid){
+            for(const node of row){
+                colorCell(node.x, node.y,`hsl(30, ${node.difficulty * 10}%, ${100 - node.difficulty * 5}%)`);
             }
         }
     }

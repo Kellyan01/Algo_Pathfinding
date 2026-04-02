@@ -30,7 +30,7 @@ index.html
 ## Fichiers produits
 - src/script/Entity/Node.js — classe Node (x, y, difficulty, g, h, f, isWall, parent)
 - src/script/Entity/PriorityQueue.js — tas binaire min-heap avec lazy deletion + peek()
-- src/script/functions/functions.js — createGrid, renderGrid, colorCell, sleep, resetPartial, resetTotal, algoLauncher, buildPath
+- src/script/functions/functions.js — createGrid, renderGrid(colorDifficulty), colorCell, sleep, resetPartial, resetTotal, algoLauncher, buildPath, buildWall, placeNode
 - src/script/Entity/BSPNode.js — classe BSPNode (x, y, width, height, left, right, room)
 - src/script/algorithms/pathfinding/heuristique.js — distanceManhattan, distanceChebyshev, distanceEuclidienne, distanceOctile
 - src/script/algorithms/pathfinding/aStar.js — algorithme A* async avec PriorityQueue
@@ -42,12 +42,13 @@ index.html
 - src/script/algorithms/pathfinding/biDirectionalDijkstra.js — Dijkstra bidirectionnel simplifié
 - src/script/algorithms/pathfinding/biDirectionalDijkstraOpti.js — Dijkstra bidirectionnel optimal
 - src/script/algorithms/generators/dungeon/bspDungeon.js — splitBSP, placeRooms(minSize, maxSize), applyRooms, getRoom, connectRooms, generateBSP(minSize=5, maxSize=8)
-- src/script/script.js — point d'entrée, grille 20x20, start/end, listeners, panel de contrôle
-- index.html — interface avec aside de contrôle (boutons, selects, checkboxes)
+- src/script/script.js — point d'entrée, grille dynamique (défaut 20x20), listeners, panel de contrôle complet
+- index.html — interface avec aside de contrôle (boutons, selects, checkboxes, radio builders, inputs grille/BSP)
 - documentation/pathfinding.md — guide pédagogique complet (14 sections)
 - documentation/labyrinthGenerator.md — génération de labyrinthes (DFS, Prim, Kruskal...)
 - documentation/dungeonGenerator.md — génération de donjons (BSP, Delaunay+MST, Cellular Automata, WFC)
 - documentation/panelAdmin.md — documentation de l'implémentation du panel de contrôle
+- src/script/algorithms/generators/map/voronoiMap.js — generateSeeds(count, gridCols, gridRows, biomes), generateVoronoi(grid, seeds)
 - documentation/mapGenerator.md — génération de cartes naturelles (Perlin, Voronoi, Diamond-Square, Érosion hydraulique, Cellular Automata)
 
 ## Ce qui a été couvert
@@ -68,13 +69,22 @@ index.html
 - peek() ajouté à PriorityQueue — retourne le f minimum sans pop, Infinity si vide
 - Pourquoi la différence simplifiée/optimale est rarement visible sur petite grille
 - Panel de contrôle complet :
-  - Toggle mur au clic (ajouter / supprimer)
+  - Création de grille dynamique (inputs largeur/hauteur + bouton)
+  - Dungeon Generator BSP (inputs minSize/maxSize + bouton + validation)
+  - Système de radio buttons builder (Désactivé / Mur / Départ / Arrivé)
+  - Placement/déplacement de start et end via le builder
+  - buildWall() — toggle mur au clic, recolorie selon mode difficulté
+  - placeNode() — place ou supprime start/end, reset couleur de l'ancien node
   - Toggle difficulté (avec mise à jour visuelle immédiate)
   - Toggle diagonales
-  - Reset partiel (efface la visualisation algo, garde les murs)
-  - Reset total (remet tout à zéro, supprime les murs)
-  - Choix de l'algorithme via select (A*, Dijkstra, BFS, Greedy, Bidirectionnel A*, Bidirectionnel A* Optimal, Dijkstra Bidirectionnel, Dijkstra Bidirectionnel Optimal) — dispatch via algoLauncher()
+  - Reset partiel (efface la visualisation algo, garde les murs, garde start/end)
+  - Reset total (remet tout à zéro, supprime les murs, reset start/end à null)
+  - Choix de l'algorithme via select avec optgroup (Heuristique / Non Heuristique) — dispatch via algoLauncher()
   - Choix de l'heuristique via select (Manhattan, Chebyshev, Euclidienne, Octile) — stockage de la fonction via objet de correspondance
+
+- Génération de carte Voronoi — implémentée (generateSeeds + generateVoronoi, graines aléatoires, 5 biomes, recoloration dans le listener)
+- Bouton "Générer Carte Voronoi" dans le panel (section Map Generator dans index.html)
+- Tableau `biomes = [1, 3, 5, 8, 10]` déclaré en global dans script.js
 
 ## Prochaines étapes possibles (non faites)
 - Option C : mode comparaison côte à côte entre algos

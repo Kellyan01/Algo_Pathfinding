@@ -139,6 +139,73 @@ function getClosestSeed(x, y, seeds) {
 
 Une technique courante : utiliser Voronoi pour définir les **grandes régions** (biomes) et Perlin pour ajouter du **détail** à l'intérieur de chaque région (relief, variation locale).
 
+### Implémentation
+
+**`generateSeeds(count, gridCols, gridRows, biomes)`** — génère des graines à positions aléatoires :
+
+```js
+function generateSeeds(count, gridCols, gridRows, biomes) {
+    const seeds = [];
+    for (let i = 0; i < count; i++) {
+        const x = Math.floor(Math.random() * gridCols);
+        const y = Math.floor(Math.random() * gridRows);
+        const index = Math.floor(Math.random() * biomes.length);
+        seeds.push({ x, y, difficulty: biomes[index] });
+    }
+    return seeds;
+}
+```
+
+`biomes` est un tableau de difficultés disponibles. Chaque graine pioche une difficulté aléatoire dans ce tableau :
+
+```js
+const biomes = [1, 3, 5, 8, 10]; // plaine, forêt, marais, montagne, eau profonde
+```
+
+**`generateVoronoi(grid, seeds)`** — assigne chaque node à la graine la plus proche :
+
+```js
+function generateVoronoi(grid, seeds) {
+    for (const row of grid) {
+        for (const node of row) {
+            const seed = seeds.reduce((seed, current) => {
+                if (Math.hypot(node.x - current.x, node.y - current.y) <
+                    Math.hypot(node.x - seed.x, node.y - seed.y)) {
+                    return current;
+                } else {
+                    return seed;
+                }
+            }, seeds[0]);
+
+            node.difficulty = seed.difficulty;
+        }
+    }
+}
+```
+
+> **Clé :** le `reduce` compare les distances à chaque graine et retourne toujours la plus proche. Le cas d'égalité exacte est rarissime avec `Math.hypot` (décimales) — en cas d'égalité, la première graine rencontrée l'emporte (condition `<` stricte).
+
+**Branchement dans `script.js` :**
+
+```js
+const biomes = [1, 3, 5, 8, 10];
+
+generateMapVoronoiBtn.addEventListener("click", () => {
+    const seeds = generateSeeds(6, gridCol, gridRow, biomes);
+    generateVoronoi(mainGrid, seeds);
+
+    if (difficulty) {
+        for (const row of mainGrid) {
+            for (const node of row) {
+                colorCell(node.x, node.y, `hsl(30, ${node.difficulty * 10}%, ${100 - node.difficulty * 5}%)`);
+            }
+        }
+    }
+});
+```
+
+> **Design :** la recoloration est faite dans le listener, pas dans `generateVoronoi`. L'algo s'occupe des données (`node.difficulty`), le listener s'occupe de l'affichage. Ce découpage permet d'appeler `generateVoronoi` sans affichage (tests, pré-calcul...).
+
 ### Avantages / Limites
 
 | ✅ Avantages | ❌ Limites |
