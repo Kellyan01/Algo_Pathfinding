@@ -180,9 +180,9 @@ generateDungeonBSPBtn.addEventListener("click", ()=>{
     const minSize = parseInt(document.getElementById("roomMinSize").value);
     const maxSize = parseInt(document.getElementById("roomMaxSize").value);
 
-    //Vérifier si minSize et maxSize sont supérieur à zéro
-    if(!minSize > 0 || !maxSize > 0){
-        alert("Les tailles doivent toutes être supérieur à 0");
+    //Vérifier si minSize et maxSize sont supérieur à 2
+    if(!minSize > 2 || !maxSize > 2){
+        alert("Les tailles doivent toutes être supérieur à 2");
         return;
     }
 
