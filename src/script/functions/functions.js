@@ -73,9 +73,9 @@ function resetTotal(grid, start, end, difficulty){
             node.isWall = false;
 
             // remise de la couleur d'origine
-            if(node !== start && node !== end){
+            //if(node !== start && node !== end){
                 difficulty ? colorCell(node.x, node.y,  `hsl(30, ${node.difficulty * 10}%, ${100 - node.difficulty * 5}%)`) : colorCell(node.x, node.y,  "");
-            }
+            //}
         }
     }
 }
@@ -142,4 +142,36 @@ function buildPath(meeting, parentsForward, parentsBackward){
 
     // 6. Retourner le dernier nœud
     return fullPath.pop();
+}
+
+//placer / supprimer un mur
+function buildWall(grid, target, node, x, y, difficultyMode){
+    if(node === start || node === end) return;
+    if(node.isWall){
+        grid[y][x].isWall = false;
+        if(difficultyMode){
+            const d = node.difficulty;
+            target.style.backgroundColor = `hsl(30, ${d * 10}%, ${100 - d * 5}%)`;
+            return;
+        }
+        colorCell(x,y,"");
+        return;
+    }
+    colorCell(x,y,"black");
+    grid[y][x].isWall = true;
+}
+
+//placer le point de départ ou d'arrivé
+function placeNode(grid, x, y, node, difficultyMode, color){
+    //si le point de départ existe déjà
+    if(node){
+        //on reset sa couleur
+        difficultyMode ? colorCell(node.x, node.y, `hsl(30, ${node.difficulty * 10}%, ${100 - node.difficulty * 5}%)`) : colorCell(node.x,node.y,"");
+
+        //et qu'il est le même que la cible de mon clique, je l'efface
+        if(node === grid[y][x]) return;
+    }
+    //je colore le nouveau node et le retourne
+    colorCell(x,y,color);
+    return grid[y][x];
 }

@@ -9,12 +9,27 @@
 <body>
     <aside>
         <h1>Tchernobyl - Reactor 4</h1>
-        <button id="pathfinder">Trouver le chemin</button>
+        <h2>Génération de la Grille</h2>
+        <label>
+            <input type="number" id="gridWidth"> Largeur
+        </label>
+        <label>
+            <input type="number" id="gridHeight"> Hauteur
+        </label>
+        <button id="gridCreation">Générer la Grille</button>
+        <h2>Sélectionnez votre Builder</h2>
+        <section>
+            <label for="offRadio"><input type="radio" id="offRadio" name="builder" checked>Désactivé</label>
+            <label for="wallRadio"><input type="radio" id="wallRadio" name="builder">Mur</label>
+            <label for="startRadio"><input type="radio" id="startRadio" name="builder">Départ</label>
+            <label for="endRadio"><input type="radio" id="endRadio" name="builder">Arrivé</label>
+        </section>
+        <h2>Pathfinding Settings</h2>
         <label>
             <input type="checkbox" id="toggleDifficulty" checked> Difficulté
         </label>
         <label>
-            <input type="checkbox" id="toggleDiagonal" checked> Diagonales
+            <input type="checkbox" id="toggleDiagonal"> Diagonales
         </label>
 
         <label for="algoSelect">Algorithme</label>
@@ -41,6 +56,8 @@
             <option value="octile">Distance d'Octile</option>
         </select>
 
+        <h2>ACTION !</h2>
+        <button id="pathfinder">Trouver le chemin</button>
         <button id="resetPartial">Reset Partiel</button>
         <button id="resetTotal">Reset Total</button>
         <button id="generateDungeonBSP">Générer Donjon BSP</button>

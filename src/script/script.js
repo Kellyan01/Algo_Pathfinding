@@ -23,9 +23,12 @@ const selectAlgo = document.getElementById("algoSelect");
 const selectHeuristique = document.getElementById("heuristiqueSelect");
 const generateDungeonBSPBtn = document.getElementById("generateDungeonBSP");
 
+//Ciblage paramétrage taille de grille
+const gridCreationBtn = document.getElementById("gridCreation");
+
 //paramètre de la grille
-const gridRow = 20;
-const gridCol = 20;
+let gridRow = 20;
+let gridCol = 20;
 let difficulty = true;
 let diagonal = true;
 let selectedAlgo = selectAlgo.value;
@@ -33,37 +36,75 @@ let selectedHeuristique = heuristiques[selectHeuristique.value];
 
 //largeur du container
 container.style.width = gridCol*42+"px";
+container.style.height = gridRow*42+"px";
 
 //Création de la grille de div
-const mainGrid = createGrid(gridRow,gridCol);
+let mainGrid = createGrid(gridRow,gridCol);
 renderGrid(mainGrid, container, difficulty);
 
 //Point de départ et d'arrivé
-const start = mainGrid[0][0];
-const end = mainGrid[gridRow - 1][gridCol -1];
+let start;
+let end;
 
 //Coloration du point de départ et d'arrivé
-colorCell(start.x, start.y,"green");
-colorCell(end.x, end.y,"red");
+// colorCell(start.x, start.y,"green");
+// colorCell(end.x, end.y,"red");
 
-//Création des murs
-container.addEventListener("click", (event)=>{
-    const x = event.target.getAttribute("data-x");
-    const y = event.target.getAttribute("data-y");
-    const node = mainGrid[parseInt(y)][parseInt(x)];
-    if(node === start || node === end) return;
-    if(node.isWall){
-        mainGrid[parseInt(y)][parseInt(x)].isWall = false;
-        if(difficulty){
-            const d = node.difficulty;
-            event.target.style.backgroundColor = `hsl(30, ${d * 10}%, ${100 - d * 5}%)`;
-            return;
-        }
-        colorCell(x,y,"");
+//Re-création de la grille de div
+gridCreationBtn.addEventListener("click",(event)=>{
+    //récupérer les paramètre de la grille
+    const gridWidth = document.getElementById("gridWidth");
+    const gridHeight = document.getElementById("gridHeight");
+
+    gridRow = parseInt(gridHeight.value);
+    gridCol = parseInt(gridWidth.value);
+
+    if(!gridRow >= 5 || !gridCol >= 5){
+        alert("Vous devez entrer une Largeur et une Hauteur d'au moins 5 cases");
         return;
     }
-    colorCell(x,y,"black");
-    mainGrid[parseInt(y)][parseInt(x)].isWall = true;
+
+    //reset total de la grille
+    container.innerText = null;
+
+    //largeur du container
+    container.style.width = gridCol*42+"px";
+    container.style.height = gridRow*42+"px";
+
+    //Création de la grille de div
+    mainGrid = createGrid(gridRow,gridCol);
+    renderGrid(mainGrid, container, difficulty);
+})
+
+//Création des murs, placement point de départ et point d'arrivé
+container.addEventListener("click", (event)=>{
+    //ciblage des boutons radios
+    const wallRadio = document.getElementById("wallRadio");
+    const startRadio = document.getElementById("startRadio");
+    const endRadio = document.getElementById("endRadio");
+    const offRadio = document.getElementById("offRadio");
+    //récupération de la case cliquée
+    const x = parseInt(event.target.getAttribute("data-x"));
+    const y = parseInt(event.target.getAttribute("data-y"));
+    //récupération du node concerné
+    const node = mainGrid[y][x];
+    //lancement des fonctions de build
+    switch(true){
+        case wallRadio.checked :
+            buildWall(mainGrid, event.target, node, x, y, difficulty);
+            break;
+        case startRadio.checked :
+            start = placeNode(mainGrid, x, y, start, difficulty, "green");
+            break;
+        case endRadio.checked :
+            end = placeNode(mainGrid, x, y, end, difficulty, "red");
+            break;
+        case offRadio.checked :
+            break;
+        default :
+            alert("Sélectionnez un builder");
+            return;
+    }
 })
 
 //Toggle de la Difficulté
@@ -91,6 +132,9 @@ resetPartialBtn.addEventListener("click",(event)=>{
 //Reset Total
 resetTotalBtn.addEventListener("click",(event)=>{
     resetTotal(mainGrid, start, end, difficulty);
+    //effacement des points de départ et d'arrivé
+    start = null;
+    end = null;
 })
 
 //Choix Algo
@@ -105,6 +149,11 @@ selectHeuristique.addEventListener("change",(event)=>{
 
 //Lancement de l'algorithme A*
 pathfinderBtn.addEventListener("click", async ()=>{
+    //Vérifier s'il y a un point de départ et d'arrivé
+    if(!start || !end){
+        alert("Placez d'abord un point de départ et un point d'arrivé");
+        return;
+    }
     const path = await algoLauncher(selectedAlgo, mainGrid, start, end, difficulty,diagonal,selectedHeuristique);
 
     if(!path){
@@ -127,7 +176,7 @@ generateDungeonBSPBtn.addEventListener("click", ()=>{
     resetTotal(mainGrid, start, end, difficulty);
 
     // Générer le donjon avec BSP
-    generateBSP(mainGrid, 5, 10);
+    generateBSP(mainGrid, 5, 7);
 
     // Mettre à jour les couleurs des cases en fonction de la difficulté
     for(const row of mainGrid){
