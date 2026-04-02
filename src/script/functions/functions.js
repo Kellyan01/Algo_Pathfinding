@@ -41,7 +41,7 @@ function colorCell(x,y,color){
 //Image de background des case
 function backgroundImageCell(x,y,imgUrl){
     const cell = document.querySelector(`div[data-x="${x}"][data-y="${y}"]`);
-    cell.style.backgroundImage = imgUrl;
+    cell.style.backgroundImage = `url(${imgUrl})`;
     cell.style.backgroundSize = "cover";
 }
 

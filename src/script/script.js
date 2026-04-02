@@ -8,40 +8,40 @@ const heuristiques = {
 
 //Liste de Biomes
 const biomesList = [
-    {
+    /*{
         type:"Route",
         difficulty:1,
         imgUrl:""
-    },
+    },*/
     {
         type:"Plaine",
         difficulty:2,
-        imgUrl:""
+        imgUrl:"./src/img/tiles/plain.png"
     },
     {
         type:"Forêt",
         difficulty:4,
-        imgUrl:""
+        imgUrl:"./src/img/tiles/forest.png"
     },
     {
         type:"Marais",
         difficulty:6,
-        imgUrl:""
+        imgUrl:"./src/img/tiles/swamp.png"
     },
     {
         type:"Colline",
         difficulty:7,
-        imgUrl:""
+        imgUrl:"./src/img/tiles/hill.png"
     },
     {
         type:"Montagne",
         difficulty:8,
-        imgUrl:""
+        imgUrl:"./src/img/tiles/mountain.png"
     },
     {
         type:"Eau Profonde",
         difficulty:10,
-        imgUrl:""
+        imgUrl:"./src/img/tiles/water.png"
     }
 ];
 
@@ -250,12 +250,19 @@ generateDungeonBSPBtn.addEventListener("click", ()=>{
 generateMapVoronoiBtn.addEventListener("click", ()=>{
     const seeds = generateSeeds(20, gridCol, gridRow,biomesList,5)
     generateVoronoi(mainGrid, seeds, 5);
-    //4. Coloriser les cases si la difficukté est activé
-    //Coloration en fonction de la difficulté
-    if(difficulty){
+    //4. Remplir les cases    
         for(const row of mainGrid){
             for(const node of row){
-                colorCell(node.x, node.y,`hsl(30, ${node.difficulty * 10}%, ${100 - node.difficulty * 5}%)`);
+                //Coloriser les cases si la difficukté est activé
+                if(difficulty){
+                    // retirer les images de background
+                    backgroundImageCell(node.x, node.y, "");
+                    // colorier les cases en fonction de la difficulté
+                    colorCell(node.x, node.y,`hsl(30, ${node.difficulty * 10}%, ${100 - node.difficulty * 5}%)`);
+                } else {
+                // background image en fonction du biome
+                nodeTileUrl(node,biomesList);
+                backgroundImageCell(node.x, node.y, node.imgUrl);
             }
         }
     }
