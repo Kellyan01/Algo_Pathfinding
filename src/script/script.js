@@ -212,8 +212,8 @@ generateDungeonBSPBtn.addEventListener("click", ()=>{
 
 // Lancement de la génération de Map avec Voronoi
 generateMapVoronoiBtn.addEventListener("click", ()=>{
-    const seeds = generateSeeds(10, gridCol, gridRow,biomes)
-    generateVoronoi(mainGrid, seeds);
+    const seeds = generateSeeds(10, gridCol, gridRow,biomes,5)
+    generateVoronoi(mainGrid, seeds, 5);
     //4. Coloriser les cases si la difficukté est activé
     //Coloration en fonction de la difficulté
     if(difficulty){

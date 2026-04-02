@@ -48,7 +48,7 @@ index.html
 - documentation/labyrinthGenerator.md — génération de labyrinthes (DFS, Prim, Kruskal...)
 - documentation/dungeonGenerator.md — génération de donjons (BSP, Delaunay+MST, Cellular Automata, WFC)
 - documentation/panelAdmin.md — documentation de l'implémentation du panel de contrôle
-- src/script/algorithms/generators/map/voronoiMap.js — generateSeeds(count, gridCols, gridRows, biomes), generateVoronoi(grid, seeds)
+- src/script/algorithms/generators/map/voronoiMap.js — generateSeeds(count, gridCols, gridRows, biomes, jitter), generateVoronoi(grid, seeds, jitter)
 - documentation/mapGenerator.md — génération de cartes naturelles (Perlin, Voronoi, Diamond-Square, Érosion hydraulique, Cellular Automata)
 
 ## Ce qui a été couvert
@@ -83,6 +83,9 @@ index.html
   - Choix de l'heuristique via select (Manhattan, Chebyshev, Euclidienne, Octile) — stockage de la fonction via objet de correspondance
 
 - Génération de carte Voronoi — implémentée (generateSeeds + generateVoronoi, graines aléatoires, 5 biomes, recoloration dans le listener)
+- Jitter Voronoi — deux niveaux combinés : jitter par graine (déforme les tailles des régions) + jitter par comparaison (brise les frontières case par case)
+- Blending Voronoi — interpolation par inverse des distances entre les 2 graines les plus proches, combiné avec le jitter dans generateVoronoi(grid, seeds, jitter)
+- Trois versions conservées dans voronoiMap.js : generateVoronoiJitter, generateVoronoiBlending, generateVoronoi (jitter + blending)
 - Bouton "Générer Carte Voronoi" dans le panel (section Map Generator dans index.html)
 - Tableau `biomes = [1, 3, 5, 8, 10]` déclaré en global dans script.js
 

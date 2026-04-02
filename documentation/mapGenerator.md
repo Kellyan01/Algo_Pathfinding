@@ -206,13 +206,177 @@ generateMapVoronoiBtn.addEventListener("click", () => {
 
 > **Design :** la recoloration est faite dans le listener, pas dans `generateVoronoi`. L'algo s'occupe des données (`node.difficulty`), le listener s'occupe de l'affichage. Ce découpage permet d'appeler `generateVoronoi` sans affichage (tests, pré-calcul...).
 
+### Atténuer les frontières — Jitter
+
+Sans modification, les frontières Voronoi sont **géométriquement parfaites** — une case bascule brusquement d'un biome à l'autre. Deux techniques de jitter permettent d'atténuer ça.
+
+#### Jitter par graine (region jitter)
+
+Chaque graine reçoit un décalage aléatoire fixe au moment de sa création. Ce décalage s'ajoute à sa distance lors de chaque comparaison :
+
+```js
+// Dans generateSeeds :
+const seedJitter = Math.random() * jitter;
+seeds.push({ x, y, difficulty, jitter: seedJitter });
+
+// Dans generateVoronoi :
+dist(node, current) + current.jitter  <  dist(node, seed) + seed.jitter
+```
+
+**Effet :** déforme les **tailles des régions** — certaines graines attirent plus de cases que d'autres. Les frontières restent géométriquement nettes, mais les régions sont inégales.
+
+#### Jitter par comparaison (border jitter)
+
+Un `Math.random()` indépendant est tiré **à chaque comparaison** :
+
+```js
+dist(node, current) + Math.random() * jitter  <  dist(node, seed) + Math.random() * jitter
+```
+
+**Effet :** brise les **frontières** case par case — des cases voisines peuvent appartenir à des biomes différents, créant des bords irréguliers.
+
+> **Pourquoi ça marche :** les deux `Math.random()` sont indépendants, donc la comparaison est perturbée différemment pour chaque case, cassant la régularité géométrique.
+
+#### Combinaison des deux (implémentation finale)
+
+En combinant les deux, on obtient des régions aux tailles inégales **et** aux bords irréguliers :
+
+```js
+function generateVoronoi(grid, seeds, jitter) {
+    for (const row of grid) {
+        for (const node of row) {
+            const seed = seeds.reduce((seed, current) => {
+                if (Math.hypot(node.x - current.x, node.y - current.y) + current.jitter + Math.random() * jitter
+                  < Math.hypot(node.x - seed.x,    node.y - seed.y)    + seed.jitter    + Math.random() * jitter) {
+                    return current;
+                } else {
+                    return seed;
+                }
+            }, seeds[0]);
+            node.difficulty = seed.difficulty;
+        }
+    }
+}
+```
+
+```js
+function generateSeeds(count, gridCols, gridRows, biomes, jitter) {
+    const seeds = [];
+    for (let i = 0; i < count; i++) {
+        seeds.push({
+            x: Math.floor(Math.random() * gridCols),
+            y: Math.floor(Math.random() * gridRows),
+            difficulty: biomes[Math.floor(Math.random() * biomes.length)],
+            jitter: Math.random() * jitter
+        });
+    }
+    return seeds;
+}
+```
+
+**Dosage dans le listener :**
+```js
+const seeds = generateSeeds(10, gridCol, gridRow, biomes, 10); // regionJitter = 10
+generateVoronoi(mainGrid, seeds, 5);                           // borderJitter = 5
+```
+
+| Paramètre | Rôle | Valeur faible | Valeur élevée |
+|-----------|------|--------------|--------------|
+| `jitter` dans `generateSeeds` | Déséquilibre les tailles des régions | Régions égales | Régions très inégales |
+| `jitter` dans `generateVoronoi` | Irrégularité des frontières | Bords nets | Bords très chaotiques |
+
+> Pour un raffinement, on pourrait séparer ces deux paramètres en `regionJitter` et `borderJitter` pour les contrôler indépendamment.
+
+---
+
+### Atténuer les frontières — Blending
+
+Le jitter brise les frontières géométriquement, mais la difficulté reste **binaire** — une case appartient à 100% à un biome. Le blending résout ça en **interpolant la difficulté** entre les deux graines les plus proches.
+
+#### Principe
+
+Pour chaque case, on cherche les **deux graines les plus proches** et on calcule une difficulté pondérée par l'inverse des distances :
+
+```
+poids_A = 1 / dist_A    → graine proche = poids fort
+poids_B = 1 / dist_B    → graine lointaine = poids faible
+
+difficulty = (diff_A × poids_A + diff_B × poids_B) / (poids_A + poids_B)
+```
+
+**Intuition :** si tu es à 1m d'une forêt et à 9m d'un marais, tu te sens presque en forêt. L'inverse des distances garantit ça — plus une graine est proche, plus elle domine.
+
+> **Erreur classique :** utiliser les distances directement comme poids (au lieu de leur inverse) donne l'effet opposé — les graines lointaines dominent.
+
+#### Cas limite : graine sur le node
+
+Si une graine est exactement sur le node, `dist = 0` → `1/0 = Infinity`. On évite ça avec un `Math.max` :
+
+```js
+const weightA = 1 / Math.max(Math.hypot(node.x - seedMinA.x, node.y - seedMinA.y), 0.0001);
+```
+
+#### Implémentation combinée — Jitter + Blending
+
+La version finale combine les deux : le jitter perturbe **quelle graine gagne** (frontières irrégulières), le blending adoucit **la difficulté assignée** (transitions graduelles). Ce sont deux effets orthogonaux.
+
+```js
+function generateVoronoi(grid, seeds, jitter) {
+    for (const row of grid) {
+        for (const node of row) {
+            let seedsTab = [...seeds];
+
+            // 1. Trouver la graine la plus proche (avec jitter)
+            const seedMinA = seedsTab.reduce((seed, current) => {
+                if (Math.hypot(node.x - current.x, node.y - current.y) + current.jitter + Math.random() * jitter
+                  < Math.hypot(node.x - seed.x,    node.y - seed.y)    + seed.jitter    + Math.random() * jitter) {
+                    return current;
+                } else {
+                    return seed;
+                }
+            }, seedsTab[0]);
+
+            // Supprimer seedMinA pour trouver la seconde
+            seedsTab.splice(seedsTab.indexOf(seedMinA), 1);
+
+            // 2. Trouver la deuxième graine la plus proche (avec jitter)
+            const seedMinB = seedsTab.reduce((seed, current) => {
+                if (Math.hypot(node.x - current.x, node.y - current.y) + current.jitter + Math.random() * jitter
+                  < Math.hypot(node.x - seed.x,    node.y - seed.y)    + seed.jitter    + Math.random() * jitter) {
+                    return current;
+                } else {
+                    return seed;
+                }
+            }, seedsTab[0]);
+
+            // 3. Blending — interpoler la difficulté
+            const weightA = 1 / Math.max(Math.hypot(node.x - seedMinA.x, node.y - seedMinA.y), 0.0001);
+            const weightB = 1 / Math.max(Math.hypot(node.x - seedMinB.x, node.y - seedMinB.y), 0.0001);
+            node.difficulty = (seedMinA.difficulty * weightA + seedMinB.difficulty * weightB) / (weightA + weightB);
+        }
+    }
+}
+```
+
+#### Comparaison des trois versions
+
+| Version | Frontières | Transitions | Complexité |
+|---------|-----------|-------------|-----------|
+| Voronoi pur | Nettes et régulières | Binaires | Simple |
+| + Jitter | Irrégulières | Binaires | Simple |
+| + Blending | Régulières | Graduelles | Moyenne |
+| + Jitter + Blending | Irrégulières | Graduelles | Moyenne |
+
+> **Note tiles :** avec des tiles au lieu de couleurs, les zones de transition nécessitent des tiles spécifiques (ex: "forêt-marais"). C'est le problème que résout Wave Function Collapse — chaque case doit être compatible avec ses voisines.
+
 ### Avantages / Limites
 
 | ✅ Avantages | ❌ Limites |
 |------------|----------|
-| Transitions nettes entre biomes | Frontières trop droites si non lissées |
-| Simple à implémenter | Peu de continuité entre régions |
+| Simple à implémenter | Frontières trop nettes sans jitter/blending |
+| Directement connecté à `difficulty` | Deux graines proches aux mêmes coordonnées → résultat instable |
 | Très visuel et lisible | |
+| Jitter + blending donnent un résultat naturel | |
 
 **Cas d'usage :** Minecraft (biomes larges), Civilization (zones géographiques), génération de cartes de jeux de stratégie.
 
