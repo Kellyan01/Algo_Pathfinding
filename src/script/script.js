@@ -10,27 +10,27 @@ const heuristiques = {
 const biomesList = [
     {
         type:"Route",
-        difficulty:0,
-        imgUrl:""
-    },
-    {
-        type:"Plaine",
         difficulty:1,
         imgUrl:""
     },
     {
+        type:"Plaine",
+        difficulty:2,
+        imgUrl:""
+    },
+    {
         type:"Forêt",
-        difficulty:3,
+        difficulty:4,
         imgUrl:""
     },
     {
         type:"Marais",
-        difficulty:5,
+        difficulty:6,
         imgUrl:""
     },
     {
         type:"Colline",
-        difficulty:6,
+        difficulty:7,
         imgUrl:""
     },
     {
