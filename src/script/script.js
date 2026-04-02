@@ -147,7 +147,7 @@ selectHeuristique.addEventListener("change",(event)=>{
     selectedHeuristique = heuristiques[event.target.value];
 })
 
-//Lancement de l'algorithme A*
+//Lancement de l'algorithme de Pathfinding
 pathfinderBtn.addEventListener("click", async ()=>{
     //Vérifier s'il y a un point de départ et d'arrivé
     if(!start || !end){
@@ -176,7 +176,22 @@ generateDungeonBSPBtn.addEventListener("click", ()=>{
     resetTotal(mainGrid, start, end, difficulty);
 
     // Générer le donjon avec BSP
-    generateBSP(mainGrid, 5, 7);
+    //Récupération de minSize et maxSize
+    const minSize = parseInt(document.getElementById("roomMinSize").value);
+    const maxSize = parseInt(document.getElementById("roomMaxSize").value);
+
+    //Vérifier si minSize et maxSize sont supérieur à zéro
+    if(!minSize > 0 || !maxSize > 0){
+        alert("Les tailles doivent toutes être supérieur à 0");
+        return;
+    }
+
+    //Vérifier si minSize est inférieur à maxSize
+    if(minSize > maxSize){
+        alert("la taille minimum doit être inférieur ou égale à la taille maximum");
+        return;
+    }
+    generateBSP(mainGrid, minSize, maxSize);
 
     // Mettre à jour les couleurs des cases en fonction de la difficulté
     for(const row of mainGrid){
