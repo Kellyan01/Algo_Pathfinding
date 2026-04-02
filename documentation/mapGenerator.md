@@ -424,7 +424,31 @@ function generateVoronoi(grid, seeds, jitter) {
 | Très visuel et lisible | |
 | Jitter + blending donnent un résultat naturel | |
 
-**Cas d'usage :** Minecraft (biomes larges), Civilization (zones géographiques), génération de cartes de jeux de stratégie.
+**Cas d'usage jeu vidéo :** Minecraft (biomes larges), Civilization (zones géographiques), génération de cartes de jeux de stratégie.
+
+### Applications hors jeu vidéo
+
+Voronoi est un outil mathématique fondamental bien au-delà du jeu vidéo — les mêmes formules s'appliquent partout où il s'agit de **partager un espace entre des points de référence**.
+
+#### Géographie et urbanisme
+- **Zones de chalandise** — déterminer quelle pharmacie, école ou hôpital est la plus proche pour chaque habitant d'une ville
+- **Couverture réseau** — découpage des zones d'antennes 4G/5G entre les antennes
+
+#### Biologie et médecine
+- **Croissance cellulaire** — les cellules occupent naturellement des territoires Voronoi autour de leur noyau
+- **Épidémiologie** — John Snow a utilisé le principe en 1854 pour identifier la pompe à eau responsable d'une épidémie de choléra à Londres, bien avant que le concept soit formalisé mathématiquement
+
+#### Architecture et design
+- **Structures alvéolaires** — les nids d'abeilles, les os spongieux et certaines façades d'immeubles sont des Voronoi naturels ou inspirés de Voronoi
+- **Génération de maillages 3D** — découper une surface en polygones pour la simulation physique
+
+#### Robotique et IA
+- **Planification de chemin** — le squelette d'un Voronoi (les frontières entre régions) donne les chemins qui **maximisent la distance aux obstacles** — utile pour naviguer sans frôler les murs
+
+#### Astronomie
+- **Distribution des galaxies** — la structure à grande échelle de l'univers forme des filaments et vides qui ressemblent à un Voronoi 3D
+
+> Ce qui est frappant : modéliser des biomes par Voronoi, c'est exactement ce que font les géographes et biologistes pour modéliser des territoires naturels — avec les mêmes formules.
 
 ---
 
