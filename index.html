@@ -8,7 +8,7 @@
 </head>
 <body>
     <aside>
-        <h1>Tchernobyl - Reactor 4</h1>
+        <h1>Tchernobyl - Reactor 4</h1> <!--Merci Jeff-->
         <h2>Génération de la Grille</h2>
         <label>
             <input type="number" id="gridWidth"> Largeur
@@ -17,6 +17,14 @@
             <input type="number" id="gridHeight"> Hauteur
         </label>
         <button id="gridCreation">Générer la Grille</button>
+        <h2>Dungeon Generator</h2>
+        <label>
+            <input type="number" id="roomMinSize"> Taille minimum d'une pièce
+        </label>
+        <label>
+            <input type="number" id="roomMaxSize"> Taille maximum d'une pièce
+        </label>
+        <button id="generateDungeonBSP">Générer Donjon BSP</button>
         <h2>Sélectionnez votre Builder</h2>
         <section>
             <label for="offRadio"><input type="radio" id="offRadio" name="builder" checked>Désactivé</label>
@@ -61,14 +69,6 @@
         <button id="resetPartial">Reset Partiel</button>
         <button id="resetTotal">Reset Total</button>
 
-        <h2>Dungeon Generator</h2>
-        <label>
-            <input type="number" id="roomMinSize"> Taille minimum d'une pièce
-        </label>
-        <label>
-            <input type="number" id="roomMaxSize"> Taille maximum d'une pièce
-        </label>
-        <button id="generateDungeonBSP">Générer Donjon BSP</button>
     </aside>
     
     <main id="container">
