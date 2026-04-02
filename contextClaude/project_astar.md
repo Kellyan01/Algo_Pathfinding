@@ -48,7 +48,7 @@ index.html
 - documentation/labyrinthGenerator.md — génération de labyrinthes (DFS, Prim, Kruskal...)
 - documentation/dungeonGenerator.md — génération de donjons (BSP, Delaunay+MST, Cellular Automata, WFC)
 - documentation/panelAdmin.md — documentation de l'implémentation du panel de contrôle
-- src/script/algorithms/generators/map/voronoiMap.js — generateSeeds(count, gridCols, gridRows, biomes, jitter), generateVoronoi(grid, seeds, jitter)
+- src/script/algorithms/generators/map/voronoiMap.js — generateSeeds(count, gridCols, gridRows, biomes, jitter), generateVoronoi(grid, seeds, jitter), generateVoronoiJitter, generateVoronoiBlending, nodeTileUrl(node, tileSet)
 - documentation/mapGenerator.md — génération de cartes naturelles (Perlin, Voronoi, Diamond-Square, Érosion hydraulique, Cellular Automata)
 
 ## Ce qui a été couvert
@@ -86,6 +86,8 @@ index.html
 - Jitter Voronoi — deux niveaux combinés : jitter par graine (déforme les tailles des régions) + jitter par comparaison (brise les frontières case par case)
 - Blending Voronoi — interpolation par inverse des distances entre les 2 graines les plus proches, combiné avec le jitter dans generateVoronoi(grid, seeds, jitter)
 - Trois versions conservées dans voronoiMap.js : generateVoronoiJitter, generateVoronoiBlending, generateVoronoi (jitter + blending)
+- biomesList dans script.js — tableau d'objets {type, difficulty, imgUrl} remplace le simple tableau de difficultés numériques
+- nodeTileUrl(node, tileSet) — assigne type et imgUrl au node via reduce sur la difficulté la plus proche (prévu pour affichage tiles, imgUrl vides pour l'instant)
 - Bouton "Générer Carte Voronoi" dans le panel (section Map Generator dans index.html)
 - Tableau `biomes = [1, 3, 5, 8, 10]` déclaré en global dans script.js
 

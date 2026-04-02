@@ -156,10 +156,41 @@ function generateSeeds(count, gridCols, gridRows, biomes) {
 }
 ```
 
-`biomes` est un tableau de difficultés disponibles. Chaque graine pioche une difficulté aléatoire dans ce tableau :
+`biomes` est un tableau d'objets `{ type, difficulty, imgUrl }`. Chaque graine pioche un biome aléatoire dans ce tableau et hérite de ses propriétés :
 
 ```js
-const biomes = [1, 3, 5, 8, 10]; // plaine, forêt, marais, montagne, eau profonde
+// biomesList dans script.js
+const biomesList = [
+    { type: "Route",       difficulty: 1,  imgUrl: "" },
+    { type: "Plaine",      difficulty: 2,  imgUrl: "" },
+    { type: "Forêt",       difficulty: 4,  imgUrl: "" },
+    { type: "Marais",      difficulty: 6,  imgUrl: "" },
+    { type: "Colline",     difficulty: 7,  imgUrl: "" },
+    { type: "Montagne",    difficulty: 8,  imgUrl: "" },
+    { type: "Eau Profonde",difficulty: 10, imgUrl: "" },
+];
+```
+
+La graine stocke `type`, `difficulty`, `jitter` et `imgUrl` :
+
+```js
+function generateSeeds(count, gridCols, gridRows, biomes, jitter) {
+    const seeds = [];
+    for (let i = 0; i < count; i++) {
+        const x = Math.floor(Math.random() * gridCols);
+        const y = Math.floor(Math.random() * gridRows);
+        const index = Math.floor(Math.random() * biomes.length);
+        const seedJitter = Math.random() * jitter;
+        seeds.push({
+            type: biomes[index].type,
+            x, y,
+            difficulty: biomes[index].difficulty,
+            jitter: seedJitter,
+            imgUrl: biomes[index].imgUrl
+        });
+    }
+    return seeds;
+}
 ```
 
 **`generateVoronoi(grid, seeds)`** — assigne chaque node à la graine la plus proche :
@@ -188,11 +219,9 @@ function generateVoronoi(grid, seeds) {
 **Branchement dans `script.js` :**
 
 ```js
-const biomes = [1, 3, 5, 8, 10];
-
 generateMapVoronoiBtn.addEventListener("click", () => {
-    const seeds = generateSeeds(6, gridCol, gridRow, biomes);
-    generateVoronoi(mainGrid, seeds);
+    const seeds = generateSeeds(20, gridCol, gridRow, biomesList, 5);
+    generateVoronoi(mainGrid, seeds, 5);
 
     if (difficulty) {
         for (const row of mainGrid) {
@@ -205,6 +234,23 @@ generateMapVoronoiBtn.addEventListener("click", () => {
 ```
 
 > **Design :** la recoloration est faite dans le listener, pas dans `generateVoronoi`. L'algo s'occupe des données (`node.difficulty`), le listener s'occupe de l'affichage. Ce découpage permet d'appeler `generateVoronoi` sans affichage (tests, pré-calcul...).
+
+**`nodeTileUrl(node, tileSet)`** — assigne la tile la plus proche à un node selon sa difficulté :
+
+```js
+function nodeTileUrl(node, tileSet) {
+    const tile = tileSet.reduce((closest, current) =>
+        Math.abs(current.difficulty - node.difficulty) < Math.abs(closest.difficulty - node.difficulty)
+        ? current : closest
+    );
+    node.imgUrl = tile.imgUrl;
+    node.type = tile.type;
+}
+```
+
+À appeler après `generateVoronoi` pour enrichir chaque node avec son type de terrain et l'URL de sa tuile. `tileSet` est `biomesList` — les difficultés ne couvrent pas toutes les valeurs entières de 1 à 10, donc on cherche la tile dont la `difficulty` est la **plus proche** de `node.difficulty` via un `reduce`.
+
+> **Cas d'usage futur :** quand les `imgUrl` seront renseignées dans `biomesList`, `nodeTileUrl` permettra d'afficher des sprites à la place des couleurs HSL.
 
 ### Atténuer les frontières — Jitter
 

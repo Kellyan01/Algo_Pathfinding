@@ -117,3 +117,16 @@ function generateSeeds(count, gridCols, gridRows,biomes, jitter){
     }
     return seeds;
 }
+
+//Fonction qui donne l'url d'une tuile à un node selon sa difficulté
+//tileSet : tableau de d'objet tile {type, difficulty, imgUrl}
+// voir biomesList dans fichier script.js
+function nodeTileUrl(node,tileSet){
+
+    //on cherche la tuile la plus proche
+    //const tile = tileSet.find((element) => element.difficulty === i);
+    const tile = tileSet.reduce((closest, current) => Math.abs(current.difficulty - node.difficulty) < Math.abs(closest.difficulty - node.difficulty) ? current : closest );
+
+    node.imgUrl = tile.imgUrl;
+    node.type = tile.type;
+}
